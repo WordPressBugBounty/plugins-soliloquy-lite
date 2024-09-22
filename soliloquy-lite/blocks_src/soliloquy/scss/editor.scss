@@ -1,0 +1,42 @@
+.wp-block-envira-example-dynamic-example-dynamic {
+	border: 1px dotted #f00;
+}
+
+.EnviraClear {
+	width: 100%;
+}
+
+.soliloquy-inspector-panelbody {
+
+	h3 {
+		margin-top: 20px;
+		margin-bottom: 10px;
+	}
+
+	input {
+
+		&,
+		&:focus,
+		&:active {
+			outline: none;
+			border: none;
+			box-shadow: none;
+		}
+	}
+}
+
+.soliloquy-block-select {
+	width: 100%;
+	padding-top: 20px;
+
+	input {
+
+		&,
+		&:focus,
+		&:active {
+			outline: none;
+			border: none;
+			box-shadow: none;
+		}
+	}
+}

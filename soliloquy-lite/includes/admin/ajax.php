@@ -700,7 +700,7 @@ class Soliloquy_Ajax {
 		}
 
 		if ( isset( $meta['caption'] ) ) {
-			$slider_data['slider'][ $attach_id ]['caption'] = trim( $meta['caption'] );
+			$slider_data['slider'][ $attach_id ]['caption'] = wp_kses_post( $meta['caption'] );
 		}
 
 		if ( isset( $meta['url'] ) ) {
@@ -791,7 +791,7 @@ class Soliloquy_Ajax {
 			}
 
 			if ( isset( $meta['caption_bulk'] ) ) {
-				$slider_data['slider'][ $image_id ]['caption'] = trim( $meta['caption_bulk'] );
+				$slider_data['slider'][ $image_id ]['caption'] = wp_kses_post( $meta['caption_bulk'] );
 			}
 
 			if ( isset( $meta['url'] ) ) {

@@ -173,6 +173,7 @@ class Soliloquy_Metaboxes_Lite {
 			wp_register_script( 'jquery-form-conditionals', plugins_url( 'assets/js/min/jquery.form-conditionals-min.js', $this->base->file ), [ 'jquery', 'plupload-handlers', 'quicktags', 'jquery-ui-sortable', $this->base->plugin_slug . '-codemirror' ], $this->base->version, true );
 			wp_enqueue_script( 'jquery-form-conditionals' );
 
+			// media script.
 			wp_register_script( $this->base->plugin_slug . '-metabox-script', plugins_url( 'assets/js/min/metabox-min.js', $this->base->file ), [ 'jquery', 'plupload-handlers', 'quicktags', 'jquery-ui-sortable' ], $this->base->version, true );
 			wp_enqueue_script( $this->base->plugin_slug . '-metabox-script' );
 
@@ -186,6 +187,8 @@ class Soliloquy_Metaboxes_Lite {
 					'uploader_info_text'      => __( 'Drag and Drop Files to Upload', 'soliloquy' ),
 					'load_image'              => wp_create_nonce( 'soliloquy-load-image' ),
 					'media_position'          => get_option( 'soliloquy_slide_position' ),
+					'heic_error_text'         => esc_attr__( 'HEIC images are not supported when ImageMagick is not enabled. Please convert to JPEG or PNG format.', 'soliloquy' ),
+					'is_imagick_enabled'      => extension_loaded( 'imagick' ),
 				]
 			);
 
@@ -1369,7 +1372,9 @@ endforeach;
 				$image = wp_get_attachment_image_src( $id, 'full' );
 				if ( ! is_array( $image ) ) {
 					// Check for video/HTML slide and possibly use a thumbnail instead.
-					if ( ( isset( $item['type'] ) && 'video' === $item['type'] || isset( $item['type'] ) && 'html' === $item['type'] ) && ! empty( $item['thumb'] ) ) {
+					if ( ( ( isset( $item['type'] ) && 'video' === $item['type'] )
+					|| ( isset( $item['type'] ) && 'html' === $item['type'] ) )
+					&& ! empty( $item['thumb'] ) ) {
 						$image = $item['thumb'];
 					} else {
 						continue;

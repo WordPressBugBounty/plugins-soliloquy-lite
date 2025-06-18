@@ -374,6 +374,13 @@ body.post-type-soliloquy {
 		padding-top: 25px;
 		line-height: $header-height;
 		margin-left: 20px;
+		a {
+			display: inline-flex;
+			box-shadow: none;
+		}
+		a:focus-visible {
+			outline: 1px solid $secondary-color;
+		}
 		img {
 			max-width: 288px;
 		}

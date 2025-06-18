@@ -176,7 +176,7 @@ class Soliloquy_Shortcode_Lite {
 		$this->slider_data = apply_filters( 'soliloquy_pre_data', $data, $slider_id );
 
 		// If there is no data to output or the slider is inactive, do nothing.
-		if ( ! $this->slider_data || empty( $this->slider_data['slider'] ) || isset( $this->slider_data['status'] ) && 'inactive' === $this->slider_data['status'] && ! is_preview() ) {
+		if ( ! $this->slider_data || empty( $this->slider_data['slider'] ) || ( isset( $this->slider_data['status'] ) && 'inactive' === $this->slider_data['status'] && ! is_preview() ) ) {
 			return false;
 		}
 
@@ -186,9 +186,14 @@ class Soliloquy_Shortcode_Lite {
 		}
 
 		// Prepare variables.
-		$this->data[ $this->slider_data['id'] ] = $this->slider_data;
-		$slider                                 = '';
-		$i                                      = 1;
+		$created_unique_slider_id = $this->slider_data['id'] . '_' . $this->counter;
+
+		$this->slider_data['id'] = $created_unique_slider_id;
+
+		$this->data[ $created_unique_slider_id ] = $this->slider_data;
+
+		$slider = '';
+		$i      = 1;
 
 		// If this is a feed view, customize the output and return early.
 		if ( is_feed() ) {
@@ -214,9 +219,9 @@ class Soliloquy_Shortcode_Lite {
 		$slider = apply_filters( 'soliloquy_output_start', $slider, $this->slider_data );
 
 		// Build out the slider HTML.
-		$slider        .= '<div aria-live="' . $this->get_config( 'aria_live', $this->slider_data ) . '" id="soliloquy-container-' . sanitize_html_class( $this->slider_data['id'] ) . '" class="' . $this->get_slider_classes( $this->slider_data ) . '" style="max-width:' . $this->get_config( 'slider_width', $data ) . 'px;max-height:' . $this->get_config( 'slider_height', $this->slider_data ) . 'px;' . apply_filters( 'soliloquy_output_container_style', '', $this->slider_data ) . '"' . apply_filters( 'soliloquy_output_container_attr', '', $this->slider_data ) . '>';
-			$slider    .= '<ul id="soliloquy-' . sanitize_html_class( $this->slider_data['id'] ) . '" class="soliloquy-slider soliloquy-slides soliloquy-wrap soliloquy-clear">';
-				$slider = apply_filters( 'soliloquy_output_before_container', $slider, $this->slider_data );
+		$slider .= '<div aria-live="' . $this->get_config( 'aria_live', $this->slider_data ) . '" id="soliloquy-container-' . sanitize_html_class( $this->slider_data['id'] ) . '" class="' . $this->get_slider_classes( $this->slider_data ) . '" style="max-width:' . $this->get_config( 'slider_width', $data ) . 'px;max-height:' . $this->get_config( 'slider_height', $this->slider_data ) . 'px;' . apply_filters( 'soliloquy_output_container_style', '', $this->slider_data ) . '"' . apply_filters( 'soliloquy_output_container_attr', '', $this->slider_data ) . '>';
+		$slider .= '<ul id="soliloquy-' . sanitize_html_class( $this->slider_data['id'] ) . '" class="soliloquy-slider soliloquy-slides soliloquy-wrap soliloquy-clear">';
+		$slider  = apply_filters( 'soliloquy_output_before_container', $slider, $this->slider_data );
 
 		foreach ( (array) $this->slider_data['slider'] as $id => $item ) {
 			// Skip over images that are pending (ignore if in Preview mode).
@@ -227,22 +232,22 @@ class Soliloquy_Shortcode_Lite {
 			// Allow filtering of individual items.
 			$item = apply_filters( 'soliloquy_output_item_data', $item, $id, $this->slider_data, $i );
 
-			$slider      = apply_filters( 'soliloquy_output_before_item', $slider, $id, $item, $this->slider_data, $i );
-			$output      = '<li aria-hidden="true" class="' . $this->get_slider_item_classes( $item, $i, $this->slider_data ) . '"' . apply_filters( 'soliloquy_output_item_attr', '', $id, $item, $this->slider_data, $i ) . ' draggable="false" style="list-style:none">';
-				$output .= $this->get_slide( $id, $item, $this->slider_data, $i );
-			$output     .= '</li>';
-			$output      = apply_filters( 'soliloquy_output_single_item', $output, $id, $item, $this->slider_data, $i );
-			$slider     .= $output;
-			$slider      = apply_filters( 'soliloquy_output_after_item', $slider, $id, $item, $this->slider_data, $i );
+			$slider  = apply_filters( 'soliloquy_output_before_item', $slider, $id, $item, $this->slider_data, $i );
+			$output  = '<li aria-hidden="true" class="' . $this->get_slider_item_classes( $item, $i, $this->slider_data ) . '"' . apply_filters( 'soliloquy_output_item_attr', '', $id, $item, $this->slider_data, $i ) . ' draggable="false" style="list-style:none">';
+			$output .= $this->get_slide( $id, $item, $this->slider_data, $i );
+			$output .= '</li>';
+			$output  = apply_filters( 'soliloquy_output_single_item', $output, $id, $item, $this->slider_data, $i );
+			$slider .= $output;
+			$slider  = apply_filters( 'soliloquy_output_after_item', $slider, $id, $item, $this->slider_data, $i );
 
 			// Increment the iterator.
 			++$i;
 		}
 
-				$slider = apply_filters( 'soliloquy_output_after_container', $slider, $this->slider_data );
-			$slider    .= '</ul>';
-			$slider     = apply_filters( 'soliloquy_output_end', $slider, $this->slider_data );
-		$slider        .= '</div>';
+		$slider  = apply_filters( 'soliloquy_output_after_container', $slider, $this->slider_data );
+		$slider .= '</ul>';
+		$slider  = apply_filters( 'soliloquy_output_end', $slider, $this->slider_data );
+		$slider .= '</div>';
 
 		// Increment the counter.
 		++$this->counter;
@@ -324,12 +329,12 @@ class Soliloquy_Shortcode_Lite {
 
 		// If we have a caption, output the caption.
 		if ( ! empty( $item['caption'] ) ) {
-			$output      = apply_filters( 'soliloquy_output_before_caption', $output, $id, $item, $data, $i );
-			$output     .= '<div class="soliloquy-caption"><div class="soliloquy-caption-inside">';
-				$caption = apply_filters( 'soliloquy_output_caption', $item['caption'], $id, $item, $data, $i );
-				$output .= $caption;
-			$output     .= '</div></div>';
-			$output      = apply_filters( 'soliloquy_output_after_caption', $output, $id, $item, $data, $i );
+			$output  = apply_filters( 'soliloquy_output_before_caption', $output, $id, $item, $data, $i );
+			$output .= '<div class="soliloquy-caption"><div class="soliloquy-caption-inside">';
+			$caption = apply_filters( 'soliloquy_output_caption', $item['caption'], $id, $item, $data, $i );
+			$output .= $caption;
+			$output .= '</div></div>';
+			$output  = apply_filters( 'soliloquy_output_after_caption', $output, $id, $item, $data, $i );
 		}
 
 		// Return our inner image slide HTML.
@@ -420,7 +425,7 @@ class Soliloquy_Shortcode_Lite {
 							soliloquy_container_<?php echo sanitize_html_class( $data['id'] ); ?>.find('.soliloquy-controls-direction a.soliloquy-prev').attr('aria-label','previous');
 							soliloquy_container_<?php echo sanitize_html_class( $data['id'] ); ?>.find('.soliloquy-controls-direction a.soliloquy-next').attr('aria-label','next');
 
-							<?php do_action( 'soliloquy_api_on_load', $data ); ?>
+						<?php do_action( 'soliloquy_api_on_load', $data ); ?>
 						},
 						onSlideBefore: function(element, oldIndex, newIndex){
 							soliloquy_container_<?php echo sanitize_html_class( $data['id'] ); ?>.find('.soliloquy-active-slide').removeClass('soliloquy-active-slide').attr('aria-hidden','true');

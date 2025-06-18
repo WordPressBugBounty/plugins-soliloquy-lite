@@ -141,7 +141,7 @@ class Soliloquy_Review {
 		?>
 		<div class="notice notice-info is-dismissible soliloquy-review-notice">
 			<p><?php esc_html_e( 'Hey, I noticed you created a slider with Soliloquy - that’s awesome! Could you please do me a BIG favor and give it a 5-star rating on WordPress to help us spread the word and boost our motivation.', 'soliloquy-gallery' ); ?></p>
-			<p><strong>Nathan Singh<br><?php esc_html_e( 'Co-Founder of Soliloquy', 'soliloquy' ); ?></strong></p>
+			<p><strong>Syed Balkhi<br><?php esc_html_e( 'CEO of Soliloquy', 'soliloquy' ); ?></strong></p>
 			<p>
 				<a href="https://wordpress.org/support/plugin/soliloquy-lite/reviews/?filter=5#new-post" class="soliloquy-dismiss-review-notice soliloquy-review-out" target="_blank" rel="noopener"><?php esc_html_e( 'Ok, you deserve it', 'soliloquy-gallery' ); ?></a><br>
 				<a href="#" class="soliloquy-dismiss-review-notice" target="_blank" rel="noopener"><?php esc_html_e( 'Nope, maybe later', 'soliloquy' ); ?></a><br>

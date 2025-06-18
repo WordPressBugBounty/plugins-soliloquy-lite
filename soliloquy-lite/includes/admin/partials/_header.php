@@ -30,7 +30,9 @@ if ( $notifications_count > 0 ) {
 <div id="soliloquy-header">
 
 	<div id="soliloquy-logo">
-		<img src="<?php echo esc_url( plugins_url( 'assets/images/logo-color.png', $base->file ) ); ?>" alt="<?php esc_html_e( 'Soliloquy', 'soliloquy' ); ?>">
+		<a href="https://soliloquywp.com/?utm_source=liteplugin&utm_medium=logo&utm_campaign=liteplugin" aria-label="<?php esc_html_e( 'Soliloquy home page', 'soliloquy' ); ?>" target="_blank" rel="noopener noreferrer">
+			<img src="<?php echo esc_url( plugins_url( 'assets/images/logo-color.png', $base->file ) ); ?>" alt="<?php esc_html_e( 'Soliloquy logo', 'soliloquy' ); ?>">
+		</a>
 	</div>
 
 	<div class="soliloquy-right">

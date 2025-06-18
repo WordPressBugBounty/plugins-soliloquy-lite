@@ -955,7 +955,7 @@ class Soliloquy_Ajax {
 					// If a thumbnail was found, import it to the local filesystem.
 					$stream = Soliloquy_Import::get_instance()->import_remote_image( $data['src'], $data, $id, 0, true );
 					if ( ! is_wp_error( $stream ) ) {
-						if ( empty( $stream['error'] ) || isset( $stream['error'] ) && ! $stream['error'] ) {
+						if ( ( empty( $stream['error'] ) || isset( $stream['error'] ) ) && ! $stream['error'] ) {
 							$slide['attachment_id'] = $stream['attachment_id'];
 							$slide['src']           = $stream['url'];
 						}

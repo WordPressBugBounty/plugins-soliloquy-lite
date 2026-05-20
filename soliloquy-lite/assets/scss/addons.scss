@@ -68,13 +68,14 @@
 
 }
 .soliloquy-addon {
-	position: relative;
+	display: flex;
+	flex-direction: column;
 	border: 1px solid $light-grey;
 	background: $white;
 	border-radius: 3px;
 	float: left;
 	margin: 0 2% 2% 0;
-	height: 510px;
+	min-height: 380px;
 	text-align: center;
 	width: 32%;
 	box-sizing: border-box;
@@ -90,18 +91,21 @@
 	&.last {
 		margin-right: 0;
 	}
-	.soliloquy-addon-content{ padding: 20px; }
+	.soliloquy-addon-content{
+		padding: 20px;
+		flex: 1;
+	}
 	.soliloquy-addon-footer{
-		position: absolute;
 		width: 100%;
-		bottom: 0;
 		height: 75px;
-		line-height: 75px;
 		border-top: 1px solid $light-grey;
 		background-color: $almost-white;
-		.soliloquy-unlock-addon{
-			vertical-align: middle;
-		}
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 0 15px;
+		box-sizing: border-box;
+		flex-shrink: 0;
 	}
 	.soliloquy-addon-action-button:before{
 		font-size: 18px;
@@ -154,13 +158,17 @@
 	}
 
 	.soliloquy-addon-action {
-		display: inline;
-		float: right;
-		margin-top: 20px;
-		margin-right: 15px;
+		display: flex;
+		align-items: center;
+		margin: 0;
 	}
 	.soliloquy-addon-message{
-		margin-left: 15px;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		width: 100%;
+		margin-left: 0;
+		padding: 0;
 	}
 
 
@@ -201,35 +209,10 @@
 	}
 }
 
-@media screen and (min-width: 1751px) {
-.soliloquy-addon {
-	margin: 0 2% 2% 0;
-	height: 720px;
-	width: 32%;
-
-}
-}
-@media screen and (max-width: 1750px) {
-.soliloquy-addon {
-	margin: 0 2% 2% 0;
-	height: 620px;
-	width: 32%;
-
-}
-}
-@media screen and (max-width: 1549px) {
-.soliloquy-addon {
-	margin: 0 2% 2% 0;
-	height: 500px;
-	width: 32%;
-
-}
-}
-
 @media screen and (max-width: 1200px) {
 .soliloquy-addon {
 	margin: 0 2% 2% 0;
-	min-height: 460px;
+	min-height: 340px;
 	width: 48%;
 	&.last{
 		margin: 0 2% 2% 0;
@@ -243,8 +226,7 @@
 @media screen and (max-width: 568px) {
 	.soliloquy-addon {
 		margin: 0 1% 1% 0;
-		min-height: 530px;
-		margin-bottom: 30px;
+		margin-bottom: 20px;
 		width: 98%;
 		&.last{
 			margin: 0 1% 1% 0;
@@ -253,4 +235,105 @@
 			margin-top: 0;
 		}
 	}
+}
+
+/* ==========================================================================
+   Addon Badge Styles
+   ========================================================================== */
+
+.soliloquy-badge {
+	text-transform: uppercase;
+	font-weight: 700;
+	text-align: center;
+	line-height: 1;
+	display: inline-block;
+	color: #8c8f94;
+	background-color: #e5e5e6;
+}
+
+.soliloquy-badge-lg {
+	font-size: 10px;
+	letter-spacing: 0.5px;
+	padding: 8px 10px;
+}
+
+.soliloquy-badge-sm {
+	font-size: 8px;
+	letter-spacing: 0.4px;
+	padding: 6px 8px;
+}
+
+.soliloquy-badge-rounded {
+	border-radius: 3px;
+}
+
+/* ==========================================================================
+   jQuery Confirm button styles overrides
+   ========================================================================== */
+
+body div.jconfirm .jconfirm-box-container .jconfirm-box.soliloquy-upgrade-modal-box .jconfirm-title-c {
+	margin: 0 0 20px 0;
+	padding: 0;
+	font-weight: 600;
+	text-align: center;
+}
+
+body div.jconfirm .jconfirm-box-container .jconfirm-box.soliloquy-upgrade-modal-box .jconfirm-title-c .jconfirm-icon-c .dashicons,
+body div.jconfirm .jconfirm-box-container .jconfirm-box.soliloquy-upgrade-modal-box .jconfirm-title-c .jconfirm-icon-c .dashicons-before:before {
+	width: 42px;
+	height: 42px;
+	font-size: 47px;
+}
+
+body div.jconfirm .jconfirm-box-container .jconfirm-box.soliloquy-upgrade-modal-box .jconfirm-title-c .jconfirm-icon-c + .jconfirm-title {
+	margin-top: 20px;
+}
+
+body div.jconfirm .jconfirm-box-container .jconfirm-box.soliloquy-upgrade-modal-box .jconfirm-title-c .jconfirm-title {
+	color: #3c434a;
+	display: block;
+	line-height: 30px;
+}
+
+body div.jconfirm .jconfirm-box-container .jconfirm-box.soliloquy-upgrade-modal-box .jconfirm-content-pane {
+	display: block;
+	margin-bottom: 20px;
+}
+
+body div.jconfirm .jconfirm-box-container .jconfirm-box.soliloquy-upgrade-modal-box .jconfirm-content-pane .jconfirm-content {
+	color: #3c434a;
+	font-size: 16px;
+	line-height: 24px;
+	margin-bottom: 0;
+	overflow: inherit;
+}
+
+body div.jconfirm .jconfirm-box-container .jconfirm-box.soliloquy-upgrade-modal-box .jconfirm-content-pane .jconfirm-content p {
+	font-size: inherit;
+	line-height: inherit;
+	margin: 0 0 16px;
+}
+
+/* Modal heading (top) border and icon - overrides jconfirm-type-blue default */
+body div.jconfirm .jconfirm-box-container .jconfirm-box.soliloquy-upgrade-modal-box.jconfirm-type-blue {
+	border-top: solid 7px #1d2327;
+	animation: none;
+
+	.jconfirm-title-c .jconfirm-icon-c {
+		color: #1d2327 !important;
+	}
+}
+
+body div.jconfirm .jconfirm-box-container .jconfirm-box.soliloquy-upgrade-modal-box.jconfirm-type-blue button.btn-confirm {
+	background-color: #1d2327;
+	border-color: #1d2327;
+}
+
+body div.jconfirm .jconfirm-box-container .jconfirm-box.soliloquy-upgrade-modal-box .jconfirm-buttons button.btn-confirm {
+	color: #ffffff;
+}
+
+body div.jconfirm .jconfirm-box-container .jconfirm-box.soliloquy-upgrade-modal-box.jconfirm-type-blue button.btn-confirm:hover {
+	background-color: #2c3338;
+	border-color: #2c3338;
 }

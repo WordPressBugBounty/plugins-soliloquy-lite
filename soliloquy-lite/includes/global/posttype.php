@@ -90,9 +90,7 @@ class Soliloquy_Posttype_Lite {
 				'show_in_rest'        => true,
 				'rest_base'           => 'soliloquy',
 				'capability_type'     => 'post',
-				'capabilities'        => [
-					'read_post' => 'read', // Allow any logged-in user to read (filtered by map_meta_cap).
-				],
+				'map_meta_cap'        => true,
 				'menu_position'       => apply_filters( 'soliloquy_post_type_menu_position', 248 ),
 				'menu_icon'           => plugins_url( 'assets/css/images/menu-icon@2x.png', $this->base->file ),
 				'supports'            => [ 'title', 'author' ],
@@ -118,6 +116,12 @@ class Soliloquy_Posttype_Lite {
 	 * @return array
 	 */
 	public function prepare_meta( $data, $post, $context ) {
+
+		// Belt-and-suspenders gate: only expose slider_data when the post is published or the current user can read it.
+		// REST controller already enforces this via map_meta_cap; this guards against future regressions in cap mapping.
+		if ( 'publish' !== $post->post_status && ! current_user_can( 'read_post', $post->ID ) ) {
+			return $data;
+		}
 
 		$slider_data = get_post_meta( $post->ID, '_sol_slider_data', true );
 
@@ -174,7 +178,14 @@ class Soliloquy_Posttype_Lite {
 		}
 
 		if ( 'read_post' === $cap ) {
-			$caps = ( 'private' === $post->post_status ) ? [ 'read_private_posts' ] : [ 'read' ];
+			if ( 'private' === $post->post_status ) {
+				$caps = [ 'read_private_posts' ];
+			} elseif ( 'publish' === $post->post_status ) {
+				$caps = [ 'read' ];
+			} else {
+				// Non-public statuses (draft, pending, future, auto-draft, trash, inherit, etc.) require edit caps.
+				$caps = ( $user_id === $post_author ) ? [ 'edit_posts' ] : [ 'edit_others_posts' ];
+			}
 		}
 
 		return $caps;

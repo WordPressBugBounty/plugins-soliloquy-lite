@@ -8,28 +8,25 @@
 	$(function () {
 		if (typeof uploader !== 'undefined') {
 			function isHeicUploadable(file) {
-				if (file.name.toLowerCase().endsWith('.heic') && !soliloquy_media_uploader.is_imagick_enabled) {
-					return false
+				if (
+					file.name.toLowerCase().endsWith('.heic') &&
+					!soliloquy_media_uploader.is_imagick_enabled
+				) {
+					return false;
 				}
-				return true
+				return true;
 			}
 
 			//soliloquy_media_uploader.uploader_files_computer
-			$('input#plupload-browse-button').val(
-				soliloquy_media_uploader.uploader_files_computer,
-			);
-			$('.drag-drop-info').text(
-				soliloquy_media_uploader.uploader_info_text,
-			);
+			$('input#plupload-browse-button').val(soliloquy_media_uploader.uploader_files_computer);
+			$('.drag-drop-info').text(soliloquy_media_uploader.uploader_info_text);
 
 			// Set a custom progress bar
 			$('#soliloquy .drag-drop-inside').append(
-				'<div class="soliloquy-progress-bar"><div></div></div>',
+				'<div class="soliloquy-progress-bar"><div></div></div>'
 			);
-			var soliloquy_bar = $('#soliloquy .soliloquy-progress-bar'),
-				soliloquy_progress = $(
-					'#soliloquy .soliloquy-progress-bar div',
-				),
+			const soliloquy_bar = $('#soliloquy .soliloquy-progress-bar'),
+				soliloquy_progress = $('#soliloquy .soliloquy-progress-bar div'),
 				soliloquy_output = $('#soliloquy-output');
 
 			// Files Added for Uploading
@@ -42,14 +39,14 @@
 					$('#soliloquy-upload-error').html(
 						`<div class="error fade"><p>${soliloquy_media_uploader.heic_error_text}</p></div>`
 					);
-					return false
+					return false;
 				}
 			});
 
 			// File Uploading - show progress bar
 			uploader.bind('UploadProgress', function (up, file) {
 				$(soliloquy_progress).css({
-					width: up.total.percent + '%',
+					width: up.total.percent + '%'
 				});
 			});
 
@@ -62,7 +59,7 @@
 						action: 'soliloquy_load_image',
 						nonce: soliloquy_media_uploader.load_image,
 						id: info.response,
-						post_id: soliloquy_media_uploader.id,
+						post_id: soliloquy_media_uploader.id
 					},
 					function (res) {
 						// Prepend or append the new image to the existing grid of images,
@@ -85,11 +82,10 @@
 								const id = $(el).attr('id').split('-')[4];
 								quicktags({
 									id: 'soliloquy-caption-' + id,
-									buttons: 'strong,em,link,ul,ol,li,close',
+									buttons: 'strong,em,link,ul,ol,li,close'
 								});
 								QTags._buttonsInit(); // Force buttons to initialize.
 							});
-
 
 						//How many slides are inserted into slider
 						const list = $('#soliloquy-output li').length;
@@ -99,13 +95,11 @@
 
 						//Hides empty slider screen
 						if (list > 0) {
-
 							$('#soliloquy-empty-slider').fadeOut().addClass('soliloquy-hidden');
 							$('.soliloquy-slide-header').removeClass('soliloquy-hidden').fadeIn();
-
 						}
 					},
-					'json',
+					'json'
 				);
 			});
 
@@ -119,11 +113,7 @@
 			uploader.bind('Error', function (up, err) {
 				// Show message
 				$('#soliloquy-upload-error').html(
-					'<div class="error fade"><p>' +
-					err.file.name +
-					': ' +
-					err.message +
-					'</p></div>',
+					'<div class="error fade"><p>' + err.file.name + ': ' + err.message + '</p></div>'
 				);
 				up.refresh();
 			});

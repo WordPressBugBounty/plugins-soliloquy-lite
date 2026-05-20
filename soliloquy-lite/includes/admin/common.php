@@ -194,7 +194,7 @@ class Soliloquy_Common_Admin_Lite {
 			esc_html__( 'Upgrade to Pro', 'soliloquy' ),
 			esc_html__( 'Upgrade to Pro', 'soliloquy' ),
 			apply_filters( 'soliloquy_gallery_menu_cap', 'manage_options' ),
-			esc_url( $this->get_upgrade_link( 'http://soliloquywp.com/lite/', 'adminsidebar', 'unlockprosidebar' ) )
+			esc_url( $this->get_upgrade_link( 'https://soliloquywp.com/lite/', 'adminsidebar', 'unlockprosidebar' ) )
 		);
 
 		if ( ! current_user_can( 'manage_options' ) ) {
@@ -205,7 +205,7 @@ class Soliloquy_Common_Admin_Lite {
 			array_filter(
 				$submenu['edit.php?post_type=soliloquy'],
 				static function ( $item ) {
-					return strpos( $item[2], 'http://soliloquywp.com/lite/' ) !== false;
+					return strpos( $item[2], 'https://soliloquywp.com/lite/' ) !== false;
 				}
 			)
 		);

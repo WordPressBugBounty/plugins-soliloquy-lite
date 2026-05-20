@@ -709,7 +709,7 @@ endforeach;
 				<div>
 				<img class="soliloquy-item-img" src="<?php echo esc_url( plugins_url( 'assets/images/logo-color.png', $this->base->file ) ); ?>" />
 				<h3><?php esc_html_e( 'Create your slider by adding your media files above.', 'soliloquy' ); ?></h3>
-				<p class="soliloquy-help-text"><?php esc_html_e( 'Need some help?', 'soliloquy' ); ?> <a href="http://soliloquywp.com/docs/creating-your-first-slider/" target="_blank"><?php esc_html_e( 'Watch a video how to add media and create a slider', 'soliloquy' ); ?></a></p>
+				<p class="soliloquy-help-text"><?php esc_html_e( 'Need some help?', 'soliloquy' ); ?> <a href="https://soliloquywp.com/docs/creating-your-first-slider/" target="_blank"><?php esc_html_e( 'Watch a video how to add media and create a slider', 'soliloquy' ); ?></a></p>
 				</div>
 			</div>
 
@@ -1130,7 +1130,7 @@ endforeach;
 
 				<p class="soliloquy-intro"><?php esc_attr_e( 'Want to add Thumbnail Navigation?', 'soliloquy' ); ?></p>
 				<p><?php esc_html_e( 'By upgrading to Soliloquy Pro, you can add thumbnail images as navigation for your WordPress slider. ', 'soliloquy' ); ?>
-					<a target="_blank" href="<?php echo esc_url( 'http://soliloquywp.com/addons/thumbnails/' ); ?>"><?php esc_attr_e( '(See Demo)', 'soliloquy' ); ?></a>
+					<a target="_blank" href="<?php echo esc_url( 'https://soliloquywp.com/addons/thumbnails/' ); ?>"><?php esc_attr_e( '(See Demo)', 'soliloquy' ); ?></a>
 				</p>
 				<a href="<?php echo esc_url( $this->common->get_upgrade_link() ); ?>" target="_blank" class="button button-soliloquy"><?php esc_attr_e( 'Click here to Upgrade', 'soliloquy' ); ?></a>
 

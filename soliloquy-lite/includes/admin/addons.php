@@ -105,6 +105,10 @@ class Soliloquy_Addons {
 	 */
 	public function enqueue_admin_styles() {
 
+		// Enqueue jquery-confirm CSS for upgrade modal.
+		wp_register_style( $this->base->plugin_slug . '-jquery-confirm', plugins_url( 'assets/lib/jquery.confirm/jquery-confirm.min.css', $this->base->file ), [], $this->base->version );
+		wp_enqueue_style( $this->base->plugin_slug . '-jquery-confirm' );
+
 		wp_register_style( $this->base->plugin_slug . '-addons-style', plugins_url( 'assets/css/addons.css', $this->base->file ), [], $this->base->version );
 		wp_enqueue_style( $this->base->plugin_slug . '-addons-style' );
 
@@ -125,26 +129,30 @@ class Soliloquy_Addons {
 		wp_register_script( $this->base->plugin_slug . '-chosen', plugins_url( 'assets/js/min/chosen.jquery-min.js', $this->base->file ), [], $this->base->version, true );
 		wp_enqueue_script( $this->base->plugin_slug . '-chosen' );
 
-		wp_register_script( $this->base->plugin_slug . '-addons-script', plugins_url( 'assets/js/addons.js', $this->base->file ), [ 'jquery', 'jquery-ui-tabs' ], $this->base->version, true );
+		// Register jquery-confirm JS for upgrade modal; it will be enqueued
+		// automatically as a dependency of the addons script.
+		wp_register_script( $this->base->plugin_slug . '-jquery-confirm', plugins_url( 'assets/lib/jquery.confirm/jquery-confirm.min.js', $this->base->file ), [ 'jquery' ], $this->base->version, true );
+
+		wp_register_script( $this->base->plugin_slug . '-addons-script', plugins_url( 'assets/js/addons.js', $this->base->file ), [ 'jquery', 'jquery-ui-tabs', $this->base->plugin_slug . '-jquery-confirm' ], $this->base->version, true );
 		wp_enqueue_script( $this->base->plugin_slug . '-addons-script' );
 		wp_localize_script(
 			$this->base->plugin_slug . '-addons-script',
 			'soliloquy_addons',
 			[
-				'active'           => __( 'Active', 'soliloquy' ),
-				'activate'         => __( 'Activate', 'soliloquy' ),
-				'activate_nonce'   => wp_create_nonce( 'soliloquy-activate' ),
-				'activating'       => __( 'Activating...', 'soliloquy' ),
-				'ajax'             => admin_url( 'admin-ajax.php' ),
-				'deactivate'       => __( 'Deactivate', 'soliloquy' ),
-				'deactivate_nonce' => wp_create_nonce( 'soliloquy-deactivate' ),
-				'deactivating'     => __( 'Deactivating...', 'soliloquy' ),
-				'inactive'         => __( 'Inactive', 'soliloquy' ),
-				'install'          => __( 'Install Addon', 'soliloquy' ),
-				'install_nonce'    => wp_create_nonce( 'soliloquy-install' ),
-				'installing'       => __( 'Installing...', 'soliloquy' ),
-				'proceed'          => __( 'Proceed', 'soliloquy' ),
-				'redirect'         => esc_url(
+				'active'              => esc_html__( 'Active', 'soliloquy' ),
+				'activate'            => esc_html__( 'Activate', 'soliloquy' ),
+				'activate_nonce'      => wp_create_nonce( 'soliloquy-activate' ),
+				'activating'          => esc_html__( 'Activating...', 'soliloquy' ),
+				'ajax'                => admin_url( 'admin-ajax.php' ),
+				'deactivate'          => esc_html__( 'Deactivate', 'soliloquy' ),
+				'deactivate_nonce'    => wp_create_nonce( 'soliloquy-deactivate' ),
+				'deactivating'        => esc_html__( 'Deactivating...', 'soliloquy' ),
+				'inactive'            => esc_html__( 'Inactive', 'soliloquy' ),
+				'install'             => esc_html__( 'Install Addon', 'soliloquy' ),
+				'install_nonce'       => wp_create_nonce( 'soliloquy-install' ),
+				'installing'          => esc_html__( 'Installing...', 'soliloquy' ),
+				'proceed'             => esc_html__( 'Proceed', 'soliloquy' ),
+				'redirect'            => esc_url(
 					add_query_arg(
 						[
 							'post_type'          => 'soliloquy',
@@ -153,7 +161,22 @@ class Soliloquy_Addons {
 						admin_url( 'edit.php' )
 					)
 				),
-				'upgrade_nonce'    => wp_create_nonce( 'soliloquy-upgrade' ),
+				'upgrade_nonce'       => wp_create_nonce( 'soliloquy-upgrade' ),
+				'thanks_for_interest' => esc_html__( 'Thanks for your interest in Soliloquy Pro!', 'soliloquy' ),
+				'upgrade_modal'       => sprintf(
+					'<p>%s <a href="https://soliloquywp.com/support/" target="_blank" rel="noopener noreferrer"><strong>%s</strong></a></p><p>%s <strong>%s</strong> %s <strong>%s</strong>. %s</p><p>%s <a href="https://soliloquywp.com/docs/" target="_blank" rel="noopener noreferrer"><strong>%s</strong></a> %s</p>',
+					esc_html__( 'If you have any questions or issues just', 'soliloquy' ),
+					esc_html__( 'let us know', 'soliloquy' ),
+					esc_html__( 'After purchasing a license, just', 'soliloquy' ),
+					esc_html__( 'enter your license key', 'soliloquy' ),
+					esc_html__( 'on the', 'soliloquy' ),
+					esc_html__( 'Soliloquy Settings page', 'soliloquy' ),
+					esc_html__( "This will let your site automatically upgrade to Soliloquy Pro! (Don't worry, all your sliders and settings will be preserved.)", 'soliloquy' ),
+					esc_html__( 'Check out', 'soliloquy' ),
+					esc_html__( 'our documentation', 'soliloquy' ),
+					esc_html__( 'for step-by-step instructions.', 'soliloquy' )
+				),
+				'ok'                  => esc_html__( 'OK', 'soliloquy' ),
 			]
 		);
 
@@ -203,6 +226,10 @@ class Soliloquy_Addons {
 					if ( is_ssl() ) {
 						$addon->image = str_replace( 'http://', 'https://', $addon->image );
 					}
+
+					// Get the minimum required license level from the plans array (first plan is the minimum).
+					$min_license = ! empty( $addon->plans ) && is_array( $addon->plans ) && ! empty( $addon->plans[0] ) ? $addon->plans[0] : 'Pro';
+					$badge_label = $min_license;
 					?>
 
 				<div class="soliloquy-addon <?php echo sanitize_html_class( $last ); ?>">
@@ -218,12 +245,8 @@ class Soliloquy_Addons {
 						</div>
 
 						<div class="soliloquy-addon-footer">
-
-							<div class="soliloquy-addon-unlock soliloquy-addon-message">
-
-								<a  href="<?php echo esc_url( $this->common->get_upgrade_link() ); ?>" target="_blank" class="button button-soliloquy soliloquy-addon-action-button soliloquy-unlock-addon" rel="<?php echo esc_attr( $addon->title ); ?>"><?php esc_html_e( 'Upgrade Now', 'soliloquy' ); ?></a>
-
-							</div>
+							<span class="soliloquy-badge soliloquy-badge-lg soliloquy-badge-rounded" aria-label="<?php esc_attr_e( 'Required plan:', 'soliloquy' ); ?> <?php echo esc_attr( $badge_label ); ?>"><?php echo esc_html( $badge_label ); ?></span>
+							<a href="<?php echo esc_url( $this->common->get_upgrade_link() ); ?>" target="_blank" rel="noopener noreferrer" class="button button-soliloquy soliloquy-addon-action-button soliloquy-unlock-addon soliloquy-upgrade-modal"><?php esc_html_e( 'Upgrade Now', 'soliloquy' ); ?></a>
 						</div>
 					</div>
 					<?php
@@ -232,6 +255,9 @@ class Soliloquy_Addons {
 			endif
 			?>
 
+			</div>
+
+			</div>
 
 		</div>
 
@@ -309,7 +335,7 @@ class Soliloquy_Addons {
 		];
 
 		// Perform the query and retrieve the response.
-		$response      = wp_remote_post( 'http://soliloquywp.com/', $post );
+		$response      = wp_remote_post( 'https://soliloquywp.com/', $post );
 		$response_code = wp_remote_retrieve_response_code( $response );
 		$response_body = wp_remote_retrieve_body( $response );
 

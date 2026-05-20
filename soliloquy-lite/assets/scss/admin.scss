@@ -401,6 +401,7 @@ body.post-type-soliloquy {
 		height: $input-height;
 		font-size: 13px;
 		padding: 0 20px 1px;
+		min-height: 0;
 		&:focus,
 		&:hover {
 			background: $primary-color;
@@ -457,6 +458,7 @@ body.post-type-soliloquy {
 	a.button-soliloquy-secondary,
 	a.button-soliloquy-delete {
 		line-height: 32px;
+		min-height: 0;
 	}
 }
 .soliloquy-settings-tab {

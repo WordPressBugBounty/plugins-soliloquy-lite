@@ -20,24 +20,42 @@
  * limitations under the License.
  * ========================================================== */
 // jshint ignore:line
-; (function ($, window, document, soliloquy_addons) {
-
+(function ($, window, document, soliloquy_addons) {
 	//DOM Ready
 	$(function () {
-
 		//Create the Select boxes
 		$('.soliloquy-chosen').each(function () {
-
 			$(this).chosen({
 				disable_search: true
 			});
+		});
 
+		$(document).on('click', '.soliloquy-upgrade-modal', function () {
+			$.alert({
+				title: soliloquy_addons.thanks_for_interest,
+				content: soliloquy_addons.upgrade_modal,
+				icon: 'dashicons dashicons-info',
+				type: 'blue',
+				boxWidth: '550px',
+				useBootstrap: false,
+				theme: 'modern',
+				titleClass: 'soliloquy-upgrade-modal-title',
+				onOpen: function () {
+					this.$jconfirmBox.addClass('soliloquy-upgrade-modal-box');
+				},
+				buttons: {
+					confirm: {
+						text: soliloquy_addons.ok,
+						btnClass: 'btn-confirm',
+						keys: ['enter']
+					}
+				}
+			});
 		});
 
 		//Sort Filter for addons
 		$('#soliloquy-addon-filter').on('change', function () {
-
-			var $select = $(this),
+			const $select = $(this),
 				$value = $select.val(),
 				$container = $('#soliloquy-addons-area'),
 				container_data = $container.data('soliloquy-filter'),
@@ -47,63 +65,50 @@
 			$addon.show();
 
 			switch ($value) {
-
 				case 'asc':
+					$addon
+						.sort(function (a, b) {
+							return $(a).data('addon-title').localeCompare($(b).data('addon-title'));
+						})
+						.each(function (_, addon) {
+							$(addon).removeClass('last');
 
-					$addon.sort(function (a, b) {
+							$container.append(addon).hide().fadeIn(100);
+						});
 
-						return $(a).data('addon-title').localeCompare($(b).data('addon-title'));
-
-					}).each(function (_, addon) {
-
-						$(addon).removeClass('last');
-
-						$container.append(addon).hide().fadeIn(100);
-
-					});
-
-					$("#soliloquy-addons-area .soliloquy-addon:nth-child(3n)").addClass('last');
+					$('#soliloquy-addons-area .soliloquy-addon:nth-child(3n)').addClass('last');
 
 					break;
 				case 'desc':
+					$addon
+						.sort(function (a, b) {
+							return $(b).data('addon-title').localeCompare($(a).data('addon-title'));
+						})
+						.each(function (_, addon) {
+							$(addon).removeClass('last');
+							$container.append(addon).hide().fadeIn(100);
+						});
 
-					$addon.sort(function (a, b) {
-
-						return $(b).data('addon-title').localeCompare($(a).data('addon-title'));
-
-					}).each(function (_, addon) {
-
-						$(addon).removeClass('last');
-						$container.append(addon).hide().fadeIn(100);
-
-					});
-
-					$("#soliloquy-addons-area .soliloquy-addon:nth-child(3n)").addClass('last');
+					$('#soliloquy-addons-area .soliloquy-addon:nth-child(3n)').addClass('last');
 
 					break;
 				case 'active':
-
 					$addon.hide().filter('[data-addon-status="active"]').show();
 
 					$addon.removeClass('last');
 
 					$('#soliloquy-addons-area .soliloquy-addon:visible').each(function (i) {
-
 						if ((i + 1) % 3 === 0) {
-
 							$(this).addClass('last');
 						}
-
 					});
 
 					break;
 				case 'inactive':
-
 					$addon.hide().filter('[data-addon-status="inactive"]').show();
 					$addon.removeClass('last');
 
 					$('#soliloquy-addons-area .soliloquy-addon:visible').each(function (i) {
-
 						if ((i + 1) % 3 === 0) {
 							$(this).addClass('last');
 						}
@@ -120,156 +125,162 @@
 						}
 					});
 					break;
-
 			}
-
 		});
 
 		// Re-enable install button if user clicks on it, needs creds but tries to install another addon instead.
-		$('#soliloquy-addons-area').on('click.refreshInstallAddon', '.soliloquy-addon-action-button', function (e) {
+		$('#soliloquy-addons-area').on(
+			'click.refreshInstallAddon',
+			'.soliloquy-addon-action-button',
+			function (e) {
+				e.preventDefault();
 
-			e.preventDefault();
+				const $el = $(this),
+					buttons = $('#soliloquy-addons-area').find('.soliloquy-addon-action-button');
 
-			var $el = $(this),
-				buttons = $('#soliloquy-addons-area').find('.soliloquy-addon-action-button');
+				$.each(buttons, function (i, element) {
+					if ($el === element) {
+						return true;
+					}
 
-			$.each(buttons, function (i, element) {
-
-				if ($el === element) {
-
-					return true;
-
-				}
-
-				soliloquyAddonRefresh(element);
-
-			});
-		});
+					soliloquyAddonRefresh(element);
+				});
+			}
+		);
 
 		// Process Addon activations for those currently installed but not yet active.
-		$('#soliloquy-addons-area').on('click.activateAddon', '.soliloquy-activate-addon', function (e) {
+		$('#soliloquy-addons-area').on(
+			'click.activateAddon',
+			'.soliloquy-activate-addon',
+			function (e) {
+				e.preventDefault();
 
-			e.preventDefault();
+				const $button = $(this),
+					plugin = $button.attr('rel'),
+					$el = $button.parent().parent(),
+					$message = $button.parent().parent().find('.addon-status').children('span');
 
-			var $button = $(this),
-				plugin = $button.attr('rel'),
-				$el = $button.parent().parent(),
-				$message = $button.parent().parent().find('.addon-status').children('span');
+				// Remove any leftover error messages, output an icon and get the plugin basename that needs to be activated.
+				$('.soliloquy-addon-error').remove();
 
-			// Remove any leftover error messages, output an icon and get the plugin basename that needs to be activated.
-			$('.soliloquy-addon-error').remove();
+				$button.text(soliloquy_addons.activating);
+				$button.next().css({
+					display: 'inline-block',
+					'margin-top': '0px'
+				});
 
-			$button.text(soliloquy_addons.activating);
-			$button.next().css({
-				'display': 'inline-block',
-				'margin-top': '0px'
-			});
-
-			// Process the Ajax to perform the activation.
-			var opts = {
-				url: ajaxurl,
-				type: 'post',
-				async: true,
-				cache: false,
-				dataType: 'json',
-				data: {
-					action: 'soliloquy_activate_addon',
-					nonce: soliloquy_addons.activate_nonce,
-					plugin: plugin
-				},
-				success: function (response) {
-					// If there is a WP Error instance, output it here and quit the script.
-					if (response && true !== response) {
-						$el.slideDown('normal', function () {
-							$(this)
-								.after('<div class="soliloquy-addon-error"><strong>' + response.error + '</strong></div>');
-							$button.next()
-								.hide();
-							$('.soliloquy-addon-error')
-								.delay(3000)
-								.slideUp();
-						});
+				// Process the Ajax to perform the activation.
+				const opts = {
+					url: ajaxurl,
+					type: 'post',
+					async: true,
+					cache: false,
+					dataType: 'json',
+					data: {
+						action: 'soliloquy_activate_addon',
+						nonce: soliloquy_addons.activate_nonce,
+						plugin: plugin
+					},
+					success: function (response) {
+						// If there is a WP Error instance, output it here and quit the script.
+						if (response && true !== response) {
+							$el.slideDown('normal', function () {
+								$(this).after(
+									'<div class="soliloquy-addon-error"><strong>' + response.error + '</strong></div>'
+								);
+								$button.next().hide();
+								$('.soliloquy-addon-error').delay(3000).slideUp();
+							});
+							return;
+						}
+						// The Ajax request was successful, so let's update the output.
+						$button
+							.text(soliloquy_addons.deactivate)
+							.removeClass('soliloquy-activate-addon')
+							.addClass('soliloquy-deactivate-addon');
+						$message.text(soliloquy_addons.active);
+						$el.removeClass('soliloquy-addon-inactive').addClass('soliloquy-addon-active');
+						$button.next().hide();
+					},
+					error: function (xhr, textStatus, e) {
+						$button.next().hide();
 						return;
 					}
-					// The Ajax request was successful, so let's update the output.
-					$button.text(soliloquy_addons.deactivate).removeClass('soliloquy-activate-addon').addClass('soliloquy-deactivate-addon');
-					$message.text(soliloquy_addons.active);
-					$el.removeClass('soliloquy-addon-inactive').addClass('soliloquy-addon-active');
-					$button.next().hide();
-				},
-				error: function (xhr, textStatus, e) {
-					$button.next()
-						.hide();
-					return;
-				}
-			};
-			$.ajax(opts);
-		});
+				};
+				$.ajax(opts);
+			}
+		);
 
 		// Process Addon deactivations for those currently active.
-		$('#soliloquy-addons-area').on('click.deactivateAddon', '.soliloquy-deactivate-addon', function (e) {
+		$('#soliloquy-addons-area').on(
+			'click.deactivateAddon',
+			'.soliloquy-deactivate-addon',
+			function (e) {
+				e.preventDefault();
 
-			e.preventDefault();
+				const $button = $(this),
+					plugin = $button.attr('rel'),
+					$el = $button.parent().parent(),
+					$message = $button.parent().parent().find('.addon-status').children('span');
 
-			var $button = $(this),
-				plugin = $button.attr('rel'),
-				$el = $button.parent().parent(),
-				$message = $button.parent().parent().find('.addon-status').children('span');
+				// Remove any leftover error messages, output an icon and get the plugin basename that needs to be activated.
+				$('.soliloquy-addon-error').remove();
 
-			// Remove any leftover error messages, output an icon and get the plugin basename that needs to be activated.
-			$('.soliloquy-addon-error').remove();
+				$button.text(soliloquy_addons.deactivating);
+				$button.next().css({
+					display: 'inline-block',
+					'margin-top': '0px'
+				});
 
-			$button.text(soliloquy_addons.deactivating);
-			$button.next().css({
-				'display': 'inline-block',
-				'margin-top': '0px'
-			});
+				// Process the Ajax to perform the activation.
+				const opts = {
+					url: ajaxurl,
+					type: 'post',
+					async: true,
+					cache: false,
+					dataType: 'json',
+					data: {
+						action: 'soliloquy_deactivate_addon',
+						nonce: soliloquy_addons.deactivate_nonce,
+						plugin: plugin
+					},
+					success: function (response) {
+						// If there is a WP Error instance, output it here and quit the script.
+						if (response && true !== response) {
+							$el.slideDown('normal', function () {
+								$(this).after(
+									'<div class="soliloquy-addon-error"><strong>' + response.error + '</strong></div>'
+								);
+								$button.next().hide();
+								$('.soliloquy-addon-error').delay(3000).slideUp();
+							});
 
-			// Process the Ajax to perform the activation.
-			var opts = {
-				url: ajaxurl,
-				type: 'post',
-				async: true,
-				cache: false,
-				dataType: 'json',
-				data: {
-					action: 'soliloquy_deactivate_addon',
-					nonce: soliloquy_addons.deactivate_nonce,
-					plugin: plugin
-				},
-				success: function (response) {
-					// If there is a WP Error instance, output it here and quit the script.
-					if (response && true !== response) {
+							return;
+						}
 
-						$el.slideDown('normal', function () {
-							$(this).after('<div class="soliloquy-addon-error"><strong>' + response.error + '</strong></div>');
-							$button.next().hide();
-							$('.soliloquy-addon-error').delay(3000).slideUp();
-						});
-
+						// The Ajax request was successful, so let's update the output.
+						$button
+							.text(soliloquy_addons.activate)
+							.removeClass('soliloquy-deactivate-addon')
+							.addClass('soliloquy-activate-addon');
+						$message.text(soliloquy_addons.inactive);
+						$el.removeClass('soliloquy-addon-active').addClass('soliloquy-addon-inactive');
+						$button.next().hide();
+					},
+					error: function (xhr, textStatus, e) {
+						$button.next().hide();
 						return;
 					}
-
-					// The Ajax request was successful, so let's update the output.
-					$button.text(soliloquy_addons.activate).removeClass('soliloquy-deactivate-addon').addClass('soliloquy-activate-addon');
-					$message.text(soliloquy_addons.inactive);
-					$el.removeClass('soliloquy-addon-active').addClass('soliloquy-addon-inactive');
-					$button.next().hide();
-				},
-				error: function (xhr, textStatus, e) {
-					$button.next().hide();
-					return;
-				}
-			};
-			$.ajax(opts);
-		});
+				};
+				$.ajax(opts);
+			}
+		);
 
 		// Process Addon installations.
 		$('#soliloquy-addons-area').on('click.installAddon', '.soliloquy-install-addon', function (e) {
-
 			e.preventDefault();
 
-			var $button = $(this),
+			const $button = $(this),
 				plugin = $button.attr('rel'),
 				$el = $button.parent().parent(),
 				$message = $button.parent().parent().find('.addon-status').children('span');
@@ -279,12 +290,12 @@
 
 			$button.text(soliloquy_addons.installing);
 			$button.next().css({
-				'display': 'inline-block',
+				display: 'inline-block',
 				'margin-top': '0px'
 			});
 
 			// Process the Ajax to perform the activation.
-			var opts = {
+			const opts = {
 				url: ajaxurl,
 				type: 'post',
 				async: true,
@@ -299,11 +310,15 @@
 					// If there is a WP Error instance, output it here and quit the script.
 					if (response.error) {
 						$el.slideDown('normal', function () {
-							$button.parent().parent().after('<div class="soliloquy-addon-error"><strong>' + response.error + '</strong></div>');
+							$button
+								.parent()
+								.parent()
+								.after(
+									'<div class="soliloquy-addon-error"><strong>' + response.error + '</strong></div>'
+								);
 							$button.text(soliloquy_addons.install);
 							$button.next().hide();
-							$('.soliloquy-addon-error').delay(4000)
-								.slideUp();
+							$('.soliloquy-addon-error').delay(4000).slideUp();
 						});
 						return;
 					}
@@ -323,22 +338,19 @@
 							// Prevent the default action, let the user know we are attempting to install again and go with it.
 							e.preventDefault();
 							$button.next().hide();
-							$(this)
-								.val(soliloquy_addons.installing);
-							$(this)
-								.next()
-								.css({
-									'display': 'inline-block',
-									'margin-top': '0px'
-								});
+							$(this).val(soliloquy_addons.installing);
+							$(this).next().css({
+								display: 'inline-block',
+								'margin-top': '0px'
+							});
 
 							// Now let's make another Ajax request once the user has submitted their credentials.
-							var hostname = $(this).parent().parent().find('#hostname').val(),
+							const hostname = $(this).parent().parent().find('#hostname').val(),
 								username = $(this).parent().parent().find('#username').val(),
 								password = $(this).parent().parent().find('#password').val(),
 								proceed = $(this),
 								connect = $(this).parent().parent().parent().parent();
-							var cred_opts = {
+							const cred_opts = {
 								url: ajaxurl,
 								type: 'post',
 								async: true,
@@ -356,7 +368,14 @@
 									// If there is a WP Error instance, output it here and quit the script.
 									if (response.error) {
 										$el.slideDown('normal', function () {
-											$button.parent().parent().after('<div class="soliloquy-addon-error"><strong>' + response.error + '</strong></div>');
+											$button
+												.parent()
+												.parent()
+												.after(
+													'<div class="soliloquy-addon-error"><strong>' +
+														response.error +
+														'</strong></div>'
+												);
 											$button.text(soliloquy_addons.install);
 											$button.next().hide();
 											$('.soliloquy-addon-error').delay(4000).slideUp();
@@ -368,22 +387,28 @@
 									if (response.form) {
 										$button.next().hide();
 										$('.soliloquy-inline-error').remove();
-										$(proceed)
-											.val(soliloquy_addons.proceed);
-										$(proceed)
-											.after('<span class="soliloquy-inline-error">' + soliloquy_addons.connect_error + '</span>');
+										$(proceed).val(soliloquy_addons.proceed);
+										$(proceed).after(
+											'<span class="soliloquy-inline-error">' +
+												soliloquy_addons.connect_error +
+												'</span>'
+										);
 										return;
 									}
 
 									// The Ajax request was successful, so let's update the output.
-									$(connect)
-										.remove();
+									$(connect).remove();
 									$button.show();
-									$button.text(soliloquy_addons.activate).removeClass('soliloquy-install-addon').addClass('soliloquy-activate-addon');
+									$button
+										.text(soliloquy_addons.activate)
+										.removeClass('soliloquy-install-addon')
+										.addClass('soliloquy-activate-addon');
 									$button.attr('rel', response.plugin);
 									$button.removeAttr('disabled');
 									$message.text(soliloquy_addons.inactive);
-									$el.removeClass('soliloquy-addon-not-installed').addClass('soliloquy-addon-inactive');
+									$el
+										.removeClass('soliloquy-addon-not-installed')
+										.addClass('soliloquy-addon-inactive');
 									$button.next().hide();
 								},
 								error: function (xhr, textStatus, e) {
@@ -399,7 +424,10 @@
 					}
 
 					// The Ajax request was successful, so let's update the output.
-					$button.text(soliloquy_addons.activate).removeClass('soliloquy-install-addon').addClass('soliloquy-activate-addon');
+					$button
+						.text(soliloquy_addons.activate)
+						.removeClass('soliloquy-install-addon')
+						.addClass('soliloquy-activate-addon');
 					$button.attr('rel', response.plugin);
 					$message.text(soliloquy_addons.inactive);
 					$el.removeClass('soliloquy-addon-not-installed').addClass('soliloquy-addon-inactive');
@@ -407,8 +435,7 @@
 				},
 
 				error: function (xhr, textStatus, e) {
-					$button.next()
-						.hide();
+					$button.next().hide();
 					return;
 				}
 			};
@@ -418,15 +445,11 @@
 		// Function to clear any disabled buttons and extra text if the user needs to add creds but instead tries to install a different addon.
 		function soliloquyAddonRefresh(element) {
 			if ($(element).attr('disabled')) {
-				$(element)
-					.removeAttr('disabled');
+				$(element).removeAttr('disabled');
 			}
 			if ($(element).parent().parent().hasClass('soliloquy-addon-not-installed')) {
-
 				$(element).text(soliloquy_addons.install);
-
 			}
 		}
 	});
-
 })(jQuery, window, document, soliloquy_addons);

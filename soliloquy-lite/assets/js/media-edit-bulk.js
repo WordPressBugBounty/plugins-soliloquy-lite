@@ -1,70 +1,63 @@
 /**
-* Single Image View
-* - Renders an <li> element within the bulk edit view
-*/
-var SoliloquyBulkEditImageView = wp.Backbone.View.extend({
-
+ * Single Image View
+ * - Renders an <li> element within the bulk edit view
+ */
+const SoliloquyBulkEditImageView = wp.Backbone.View.extend({
 	/**
-    * The Tag Name and Tag's Class(es)
-    */
+	 * The Tag Name and Tag's Class(es)
+	 */
 
 	tagName: 'li',
 	className: 'attachment',
 
 	/**
-	* Template
-	* - The template to load inside the above tagName element
-	*/
+	 * Template
+	 * - The template to load inside the above tagName element
+	 */
 	template: wp.template('soliloquy-meta-bulk-editor-slides'),
 
 	/**
-	* Initialize
-	*
-	* @param object model   SoliloquyImage Backbone Model
-	*/
+	 * Initialize
+	 *
+	 * @param object model   SoliloquyImage Backbone Model
+	 */
 	initialize: function (args) {
-
 		// Assign the model to this view
 		this.model = args.model;
-
 	},
 
 	/**
-	* Render
-	* - Binds the model to the view, so we populate the view's fields and data
-	*/
+	 * Render
+	 * - Binds the model to the view, so we populate the view's fields and data
+	 */
 	render: function () {
-
 		// Get HTML
 		this.$el.html(this.template(this.model.attributes));
 		return this;
-
 	}
-
 });
 
 /**
-* Bulk Edit View
-*/
-var SoliloquyBulkEditView = wp.Backbone.View.extend({
-
+ * Bulk Edit View
+ */
+const SoliloquyBulkEditView = wp.Backbone.View.extend({
 	/**
-	* The Tag Name and Tag's Class(es)
-	*/
+	 * The Tag Name and Tag's Class(es)
+	 */
 	id: 'soliloquy-meta-edit-bulk',
 	tagName: 'div',
 	className: 'edit-attachment-frame mode-select hide-menu hide-router',
 
 	/**
-	* Template
-	* - The template to load inside the above tagName element
-	*/
+	 * Template
+	 * - The template to load inside the above tagName element
+	 */
 	template: wp.template('soliloquy-meta-bulk-editor'),
 
 	/**
-	* Events
-	* - Functions to call when specific events occur
-	*/
+	 * Events
+	 * - Functions to call when specific events occur
+	 */
 	events: {
 		'keyup input': 'updateItem',
 		'keyup textarea': 'updateItem',
@@ -79,16 +72,15 @@ var SoliloquyBulkEditView = wp.Backbone.View.extend({
 		'click div.query-results li': 'insertLink',
 
 		'click button.media-file': 'insertMediaFileLink',
-		'click button.attachment-page': 'insertAttachmentPageLink',
+		'click button.attachment-page': 'insertAttachmentPageLink'
 	},
 
 	/**
-	* Initialize
-	*
-	* @param object model   SoliloquyImage Backbone Model
-	*/
+	 * Initialize
+	 *
+	 * @param object model   SoliloquyImage Backbone Model
+	 */
 	initialize: function (args) {
-
 		// Define loading and loaded events, which update the UI with what's happening.
 		this.on('loading', this.loading, this);
 		this.on('loaded', this.loaded, this);
@@ -101,22 +93,20 @@ var SoliloquyBulkEditView = wp.Backbone.View.extend({
 		// The model will be blank, as we want the user's settings for each
 		// option to then apply to the entire collection
 		this.model = new SoliloquySlide();
-
 	},
 
 	/**
-	* Render
-	* - Binds the collection to the view, so we populate the view's attachments grid
-	*/
+	 * Render
+	 * - Binds the collection to the view, so we populate the view's attachments grid
+	 */
 	render: function () {
-
 		// Get HTML
 		this.$el.html(this.template(this.model.toJSON()));
 
 		// Render selected items
 		this.collection.forEach(function (model) {
 			// Init with model
-			var child_view = new SoliloquyBulkEditImageView({
+			const child_view = new SoliloquyBulkEditImageView({
 				model: model
 			});
 
@@ -128,7 +118,7 @@ var SoliloquyBulkEditView = wp.Backbone.View.extend({
 		if (this.child_views.length > 0) {
 			this.child_views.forEach(function (view) {
 				// Init with model
-				var child_view = new view({
+				const child_view = new view({
 					model: this.model
 				});
 
@@ -155,47 +145,41 @@ var SoliloquyBulkEditView = wp.Backbone.View.extend({
 
 		// Return
 		return this;
-
 	},
 
 	/**
-	* Renders an error using
-	* wp.media.view.SoliloquyError
-	*/
+	 * Renders an error using
+	 * wp.media.view.SoliloquyError
+	 */
 	renderError: function (error) {
-
 		// Define model
-		var model = {};
+		const model = {};
 		model.error = error;
 
 		// Define view
-		var view = new wp.media.view.SoliloquyError({
+		const view = new wp.media.view.SoliloquyError({
 			model: model
 		});
 
 		// Return rendered view
 		return view.render().el;
-
 	},
 
 	/**
-	* Tells the view we're loading by displaying a spinner
-	*/
+	 * Tells the view we're loading by displaying a spinner
+	 */
 	loading: function () {
-
 		// Set a flag so we know we're loading data
 		this.is_loading = true;
 
 		// Show the spinner
 		this.$el.find('.spinner').css('visibility', 'visible');
-
 	},
 
 	/**
-	* Hides the loading spinner
-	*/
+	 * Hides the loading spinner
+	 */
 	loaded: function (response) {
-
 		// Set a flag so we know we're not loading anything now
 		this.is_loading = false;
 
@@ -206,14 +190,12 @@ var SoliloquyBulkEditView = wp.Backbone.View.extend({
 		if (typeof response !== 'undefined') {
 			this.$el.find('ul.attachments').before(this.renderError(response));
 		}
-
 	},
 
 	/**
-	* Updates the model based on the changed view data
-	*/
+	 * Updates the model based on the changed view data
+	 */
 	updateItem: function (event) {
-
 		// Check if the target has a name. If not, it's not a model value we want to store
 		if (event.target.name == '') {
 			return;
@@ -221,26 +203,24 @@ var SoliloquyBulkEditView = wp.Backbone.View.extend({
 
 		// Update the model's value, depending on the input type
 		if (event.target.type == 'checkbox') {
-			value = (event.target.checked ? 1 : 0);
+			value = event.target.checked ? 1 : 0;
 		} else {
 			value = event.target.value;
 		}
 
 		// Update the model
 		this.model.set(event.target.name, value);
-
 	},
 
 	/**
-	* Saves the image metadata
-	*/
+	 * Saves the image metadata
+	 */
 	saveItem: function () {
-
 		// Tell the View we're loading
 		this.trigger('loading');
 
 		// Build an array of image IDs
-		var image_ids = [];
+		const image_ids = [];
 		this.collection.forEach(function (model) {
 			image_ids.push(model.id);
 		}, this);
@@ -252,15 +232,13 @@ var SoliloquyBulkEditView = wp.Backbone.View.extend({
 				nonce: soliloquy_metabox_local.save_nonce,
 				post_id: soliloquy_metabox_local.id,
 				meta: this.model.attributes,
-				image_ids: image_ids,
+				image_ids: image_ids
 			},
 			success: function (response) {
-
 				// For each image, update the model based on the edited information before inserting it as JSON
 				// into the underlying image.
 				this.collection.forEach(function (model) {
-
-					for (var key in this.model.attributes) {
+					for (const key in this.model.attributes) {
 						value = this.model.attributes[key];
 
 						// If the value is not blank, assign the value to the image model
@@ -270,10 +248,9 @@ var SoliloquyBulkEditView = wp.Backbone.View.extend({
 					}
 
 					// Assign the model to the underlying image item in the DOM
-					var item = JSON.stringify(model.attributes);
+					const item = JSON.stringify(model.attributes);
 					jQuery('ul#soliloquy li#' + model.get('id')).attr('data-solioquy-image-model', item);
 					jQuery('ul#soliloquy li#' + model.get('id') + ' div.title').text(model.get('title'));
-
 				}, this);
 
 				// Tell the view we've finished successfully
@@ -283,23 +260,19 @@ var SoliloquyBulkEditView = wp.Backbone.View.extend({
 				SoliloquyModalWindow.close();
 			},
 			error: function (error_message) {
-
 				// Tell wp.media we've finished, but there was an error
 				this.trigger('loaded loaded:error', error_message);
-
 			}
 		});
-
 	},
 
 	/**
-	* Inserts the direct media link for the Media Library item
-	*
-	* The button triggering this event is only displayed if we are editing a
-	* Media Library item, so there's no need to perform further checks
-	*/
+	 * Inserts the direct media link for the Media Library item
+	 *
+	 * The button triggering this event is only displayed if we are editing a
+	 * Media Library item, so there's no need to perform further checks
+	 */
 	insertMediaFileLink: function (event) {
-
 		// Tell the View we're loading
 		this.trigger('loading');
 
@@ -311,17 +284,15 @@ var SoliloquyBulkEditView = wp.Backbone.View.extend({
 
 		// Re-render the view
 		this.render();
-
 	},
 
 	/**
-	* Inserts the attachment page link for the Media Library item
-	*
-	* The button triggering this event is only displayed if we are editing a
-	* Media Library item, so there's no need to perform further checks
-	*/
+	 * Inserts the attachment page link for the Media Library item
+	 *
+	 * The button triggering this event is only displayed if we are editing a
+	 * Media Library item, so there's no need to perform further checks
+	 */
 	insertAttachmentPageLink: function (event) {
-
 		// Tell the View we're loading
 		this.trigger('loading');
 
@@ -333,16 +304,12 @@ var SoliloquyBulkEditView = wp.Backbone.View.extend({
 
 		// Re-render the view
 		this.render();
-
 	}
-
 });
 
 jQuery(document).ready(function ($) {
-
 	// Bulk Edit Slides
 	$('#soliloquy-settings-content').on('click', 'a.soliloquy-slides-edit', function (e) {
-
 		// Prevent default action
 		e.preventDefault();
 
@@ -352,14 +319,14 @@ jQuery(document).ready(function ($) {
 
 		// Pass the collection of images for this gallery to the modal view, as well
 		// as the selected attachment
-		SoliloquyModalWindow.content(new SoliloquyBulkEditView({
-			collection: SoliloquySlides,
-			child_views: SoliloquyChildViews,
-		}));
+		SoliloquyModalWindow.content(
+			new SoliloquyBulkEditView({
+				collection: SoliloquySlides,
+				child_views: SoliloquyChildViews
+			})
+		);
 
 		// Open the modal window
 		SoliloquyModalWindow.open();
-
 	});
-
 });

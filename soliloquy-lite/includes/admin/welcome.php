@@ -395,7 +395,7 @@ class Soliloquy_Welcome {
 
 					<h2>Upgrade to a complete Soliloquy experience</h2>
 
-					<p>Get the most out of Soliloquy by <a target="_blank"
+					<p>Get the most out of Soliloquy by <a target="_blank" rel="noopener noreferrer"
 							href="<?php echo esc_url( Soliloquy_Common_Admin_Lite::get_instance()->get_upgrade_link( false, 'gettingstartedtab', 'upgradetounlockallitspowerfulfeatures' ) ); ?>">upgrading
 							to unlock all of its powerful features</a>.</p>
 
@@ -411,7 +411,7 @@ class Soliloquy_Welcome {
 
 						</li>
 					</ul>
-					<a target="_blank" href="<?php echo esc_url( Soliloquy_Common_Admin_Lite::get_instance()->get_upgrade_link( false, 'gettingstartedtab', 'unlockpro' ) ); ?>" class="button soliloquy-button soliloquy-primary-button">Unlock Pro</a>
+					<a target="_blank" rel="noopener noreferrer" href="<?php echo esc_url( Soliloquy_Common_Admin_Lite::get_instance()->get_upgrade_link( false, 'gettingstartedtab', 'unlockpro' ) ); ?>" class="button soliloquy-button soliloquy-primary-button">Unlock Pro</a>
 				</div>
 
 				<div class="feature-photo-column">
@@ -432,7 +432,7 @@ class Soliloquy_Welcome {
 					<p>The Soliloquy Slider wiki has helpful documentation, tips, tricks, and code snippets to
 						help you get started.</p>
 					<a href="<?php echo esc_url( Soliloquy_Common_Admin_Lite::get_instance()->get_upgrade_link( 'https://soliloquywp.com/docs/', 'getstartedtab', 'docs' ) ); ?>"
-						class="button soliloquy-button soliloquy-primary-button" target="_blank">Browse the docs</a>
+						class="button soliloquy-button soliloquy-primary-button" target="_blank" rel="noopener noreferrer">Browse the docs</a>
 				</div>
 				<div class="soliloquy-cols">
 					<svg xmlns="http://www.w3.org/2000/svg" width="50px" viewBox="0 0 512 512" fill="#A32323">
@@ -443,7 +443,7 @@ class Soliloquy_Welcome {
 					<h3>Get Support</h3>
 					<p>Submit a support ticket and our world class support will be in touch.</p>
 					<a href="<?php echo esc_url( Soliloquy_Common_Admin_Lite::get_instance()->get_upgrade_link( false, 'getstartedtab', 'support' ) ); ?>"
-						class="button soliloquy-button soliloquy-primary-button" target="_blank">Unlock Pro</a>
+						class="button soliloquy-button soliloquy-primary-button" target="_blank" rel="noopener noreferrer">Unlock Pro</a>
 				</div>
 				<div class="soliloquy-cols">
 					<svg xmlns="http://www.w3.org/2000/svg" data-name="Layer 1" viewBox="0 0 125.23 125.23"
@@ -464,7 +464,7 @@ class Soliloquy_Welcome {
 					<h3>Enjoying Soliloquy?</h3>
 					<p>Submit a support ticket and our world class support will be in touch.</p>
 					<a href="https://wordpress.org/plugins/soliloquy-lite/#reviews"
-						class="button soliloquy-button soliloquy-primary-button" target="_blank">Leave a Review</a>
+						class="button soliloquy-button soliloquy-primary-button" target="_blank" rel="noopener noreferrer">Leave a Review</a>
 				</div>
 			</div>
 		</div>
@@ -700,7 +700,7 @@ class Soliloquy_Welcome {
 			<div class="soliloquy-am-plugins">
 				<div class="soliloquy-am-plugins-main">
 					<div>
-						<img src="<?php echo esc_attr( $plugin['icon'] ); ?>" width="64px" />
+						<img src="<?php echo esc_url( $plugin['icon'] ); ?>" width="64px" /><?php // esc_url() for img src URL context ?>
 					</div>
 					<div>
 						<h3><?php echo esc_html( $plugin['name'] ); ?></h3>
@@ -712,9 +712,9 @@ class Soliloquy_Welcome {
 						<div class="soliloquy-am-plugins-install-wrap">
 							<span class="spinner soliloquy-am-plugins-spinner"></span>
 							<?php if ( isset( $plugin['basename'] ) ) : ?>
-								<a href="#" target="_blank" class="button button-primary soliloquy-am-plugins-button soliloquy-am-plugins-install" data-url="<?php echo esc_url( $plugin['url'] ); ?>" data-basename="<?php echo esc_attr( $plugin['basename'] ); ?>">Install Plugin</a>
+								<a href="#" class="button button-primary soliloquy-am-plugins-button soliloquy-am-plugins-install" data-url="<?php echo esc_attr( $plugin['url'] ); ?>" data-basename="<?php echo esc_attr( $plugin['basename'] ); ?>">Install Plugin</a><?php // JS-intercepted click; no target=_blank needed. ?>
 							<?php else : ?>
-								<a href="<?php echo esc_url( $plugin['url'] ); ?>" target="_blank" class="button button-primary soliloquy-am-plugins-button" data-url="<?php echo esc_url( $plugin['url'] ); ?>">Install Plugin</a>
+								<a href="<?php echo esc_url( $plugin['url'] ); ?>" target="_blank" rel="noopener noreferrer" class="button button-primary soliloquy-am-plugins-button" data-url="<?php echo esc_attr( $plugin['url'] ); ?>">Install Plugin</a><?php // rel prevents reverse-tabnabbing. ?>
 							<?php endif; ?>
 						</div>
 					</div>
@@ -725,7 +725,7 @@ class Soliloquy_Welcome {
 							<div class="soliloquy-am-plugins">
 							<div class="soliloquy-am-plugins-main">
 								<div>
-									<img src="<?php echo esc_attr( $plugin['icon'] ); ?>" width="64px" />
+									<img src="<?php echo esc_url( $plugin['icon'] ); ?>" width="64px" /><?php // esc_url() for img src URL context ?>
 								</div>
 								<div>
 									<h3><?php echo esc_html( $plugin['name'] ); ?></h3>
@@ -738,9 +738,9 @@ class Soliloquy_Welcome {
 									<span class="spinner soliloquy-am-plugins-spinner"></span>
 
 							<?php if ( isset( $plugin['basename'] ) ) : ?>
-								<a href="#" target="_blank" class="button button-primary soliloquy-am-plugins-button soliloquy-am-plugins-deactivate" data-url="<?php echo esc_url( $plugin['url'] ); ?>" data-basename="<?php echo esc_attr( $plugin['basename'] ); ?>">Deactivate</a>
+								<a href="#" class="button button-primary soliloquy-am-plugins-button soliloquy-am-plugins-deactivate" data-url="<?php echo esc_attr( $plugin['url'] ); ?>" data-basename="<?php echo esc_attr( $plugin['basename'] ); ?>">Deactivate</a><?php // JS-intercepted click; no target=_blank needed. ?>
 							<?php else : ?>
-								<a href="<?php echo esc_url( $plugin['url'] ); ?>" target="_blank" class="button button-primary soliloquy-am-plugins-button soliloquy-am-plugins-deactivate" data-url="<?php echo esc_url( $plugin['url'] ); ?>">Activate</a>
+								<a href="<?php echo esc_url( $plugin['url'] ); ?>" target="_blank" rel="noopener noreferrer" class="button button-primary soliloquy-am-plugins-button soliloquy-am-plugins-deactivate" data-url="<?php echo esc_attr( $plugin['url'] ); ?>">Activate</a><?php // rel prevents reverse-tabnabbing. ?>
 							<?php endif; ?>
 						</div>
 				</div>
@@ -749,7 +749,7 @@ class Soliloquy_Welcome {
 				<div class="soliloquy-am-plugins">
 							<div class="soliloquy-am-plugins-main">
 								<div>
-									<img src="<?php echo esc_attr( $plugin['icon'] ); ?>" width="64px" />
+									<img src="<?php echo esc_url( $plugin['icon'] ); ?>" width="64px" /><?php // esc_url() for img src URL context ?>
 								</div>
 								<div>
 									<h3><?php echo esc_html( $plugin['name'] ); ?></h3>
@@ -761,9 +761,9 @@ class Soliloquy_Welcome {
 							<div class="soliloquy-am-plugins-install-wrap">
 								<span class="spinner soliloquy-am-plugins-spinner"></span>
 							<?php if ( isset( $plugin['basename'] ) ) : ?>
-							<a href="#" target="_blank" class="button button-primary soliloquy-am-plugins-button soliloquy-am-plugins-activate" data-url="<?php echo esc_url( $plugin['url'] ); ?>" data-basename="<?php echo esc_attr( $plugin['basename'] ); ?>">Activate</a>
+							<a href="#" class="button button-primary soliloquy-am-plugins-button soliloquy-am-plugins-activate" data-url="<?php echo esc_attr( $plugin['url'] ); ?>" data-basename="<?php echo esc_attr( $plugin['basename'] ); ?>">Activate</a><?php // JS-intercepted click; no target=_blank needed. ?>
 							<?php else : ?>
-								<a href="<?php echo esc_url( $plugin['url'] ); ?>" target="_blank" class="button button-primary soliloquy-am-plugins-button soliloquy-am-plugins-activate" data-url="<?php echo esc_url( $plugin['url'] ); ?>">Activate</a>
+								<a href="<?php echo esc_url( $plugin['url'] ); ?>" target="_blank" rel="noopener noreferrer" class="button button-primary soliloquy-am-plugins-button soliloquy-am-plugins-activate" data-url="<?php echo esc_attr( $plugin['url'] ); ?>">Activate</a><?php // rel prevents reverse-tabnabbing. ?>
 							<?php endif; ?>
 
 						</div>

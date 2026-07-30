@@ -64,6 +64,18 @@ class Soliloquy_Notifications {
 	}
 
 	/**
+	 * Check if user can dismiss notifications.
+	 *
+	 * @since 2.8.1
+	 *
+	 * @return bool
+	 */
+	public function can_dismiss() {
+		// Only admins can dismiss notifications, separate from viewing access
+		return $this->has_access() && current_user_can( 'manage_options' );
+	}
+
+	/**
 	 * Get option value.
 	 *
 	 * @since 1.8.7
@@ -462,8 +474,8 @@ class Soliloquy_Notifications {
 		// Run a security check.
 		check_ajax_referer( 'soliloquy_dismiss_notification', 'nonce' );
 
-		// Check for access and required param.
-		if ( ! $this->has_access() || empty( $_POST['id'] ) ) {
+		// Require manage_options for dismissing notifications
+		if ( ! $this->can_dismiss() || empty( $_POST['id'] ) ) {
 			wp_send_json_error();
 		}
 
@@ -491,7 +503,7 @@ class Soliloquy_Notifications {
 		// Remove notification and add in dismissed array.
 		if ( is_array( $option[ $type ] ) && ! empty( $option[ $type ] ) ) {
 			foreach ( $option[ $type ] as $key => $notification ) {
-				if ( $notification['id'] == $id ) { // phpcs:ignore WordPress.PHP.StrictComparisons,Universal.Operators.StrictComparisons.LooseEqual
+				if ( (string) $notification['id'] === (string) $id ) { // Strict string comparison to prevent type juggling
 					// Add notification to dismissed array.
 					array_unshift( $option['dismissed'], $notification );
 					// Remove notification from feed or events.

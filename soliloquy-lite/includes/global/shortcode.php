@@ -219,7 +219,7 @@ class Soliloquy_Shortcode_Lite {
 		$slider = apply_filters( 'soliloquy_output_start', $slider, $this->slider_data );
 
 		// Build out the slider HTML.
-		$slider .= '<div aria-live="' . $this->get_config( 'aria_live', $this->slider_data ) . '" id="soliloquy-container-' . sanitize_html_class( $this->slider_data['id'] ) . '" class="' . $this->get_slider_classes( $this->slider_data ) . '" style="max-width:' . $this->get_config( 'slider_width', $data ) . 'px;max-height:' . $this->get_config( 'slider_height', $this->slider_data ) . 'px;' . apply_filters( 'soliloquy_output_container_style', '', $this->slider_data ) . '"' . apply_filters( 'soliloquy_output_container_attr', '', $this->slider_data ) . '>';
+		$slider .= '<div aria-live="' . esc_attr( $this->get_config( 'aria_live', $this->slider_data ) ) . '" id="soliloquy-container-' . sanitize_html_class( $this->slider_data['id'] ) . '" class="' . $this->get_slider_classes( $this->slider_data ) . '" style="max-width:' . absint( $this->get_config( 'slider_width', $data ) ) . 'px;max-height:' . absint( $this->get_config( 'slider_height', $this->slider_data ) ) . 'px;' . esc_attr( apply_filters( 'soliloquy_output_container_style', '', $this->slider_data ) ) . '"' . apply_filters( 'soliloquy_output_container_attr', '', $this->slider_data ) . '>'; // Security: esc_attr() on aria_live config, absint() on slider dimensions, esc_attr() on filtered inline style to prevent XSS
 		$slider .= '<ul id="soliloquy-' . sanitize_html_class( $this->slider_data['id'] ) . '" class="soliloquy-slider soliloquy-slides soliloquy-wrap soliloquy-clear">';
 		$slider  = apply_filters( 'soliloquy_output_before_container', $slider, $this->slider_data );
 
@@ -332,7 +332,7 @@ class Soliloquy_Shortcode_Lite {
 			$output  = apply_filters( 'soliloquy_output_before_caption', $output, $id, $item, $data, $i );
 			$output .= '<div class="soliloquy-caption"><div class="soliloquy-caption-inside">';
 			$caption = apply_filters( 'soliloquy_output_caption', $item['caption'], $id, $item, $data, $i );
-			$output .= $caption;
+			$output .= wp_kses_post( $caption ); // Security: escape caption output to prevent XSS from stored or filtered content
 			$output .= '</div></div>';
 			$output  = apply_filters( 'soliloquy_output_after_caption', $output, $id, $item, $data, $i );
 		}

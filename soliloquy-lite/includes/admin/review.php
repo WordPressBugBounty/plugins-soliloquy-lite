@@ -156,7 +156,8 @@ class Soliloquy_Review {
 					}
 
 					$.post( ajaxurl, {
-						action: 'soliloquy_dismiss_review'
+						action: 'soliloquy_dismiss_review',
+						nonce: '<?php echo esc_js( wp_create_nonce( 'soliloquy-dismiss-review' ) ); ?>'
 					});
 
 					$('.soliloquy-review-notice').remove();
@@ -173,6 +174,13 @@ class Soliloquy_Review {
 	 */
 	public function dismiss_review() {
 
+		// Run a security check first.
+		check_ajax_referer( 'soliloquy-dismiss-review', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error();
+		}
+
 		$review = get_option( 'soliloquy_review' );
 		if ( ! $review ) {
 			$review = [];
@@ -182,7 +190,7 @@ class Soliloquy_Review {
 		$review['dismissed'] = true;
 
 		update_option( 'soliloquy_review', $review );
-		die();
+		wp_send_json_success();
 	}
 
 	/**

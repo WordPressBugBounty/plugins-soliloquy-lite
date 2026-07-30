@@ -295,7 +295,7 @@ class Soliloquy_Lite_Posttype_Admin {
 			* Last Modified
 			*/
 			case 'modified':
-				the_modified_date();
+				echo esc_html( get_the_modified_date() );
 				break;
 		}
 	}
@@ -489,21 +489,30 @@ class Soliloquy_Lite_Posttype_Admin {
 
 		// Iterate through post IDs, updating settings.
 		foreach ( $post_ids as $post_id ) {
+			$post_id = absint( $post_id );
+			// Verify current user can edit each individual post in bulk edit loop
+			if ( ! current_user_can( 'edit_post', $post_id ) ) {
+				continue;
+			}
+
 			// Get settings.
 			$settings = get_post_meta( $post_id, '_sol_slider_data', true );
 			if ( empty( $settings ) ) {
 				continue;
 			}
 
-			if ( ! empty( $_REQUEST['_soliloquy']['slider_theme'] ) && -1 !== sanitize_text_field( wp_unslash( $_REQUEST['_soliloquy']['slider_theme'] ) ) ) {
+			// Validate $_REQUEST['_soliloquy'] is an array before accessing nested keys
+			$soliloquy_input = isset( $_REQUEST['_soliloquy'] ) && is_array( $_REQUEST['_soliloquy'] ) ? wp_unslash( $_REQUEST['_soliloquy'] ) : [];
 
-				$settings['config']['slider_theme'] = preg_replace( '#[^a-z0-9-_]#', '', sanitize_text_field( wp_unslash( $_REQUEST['_soliloquy']['slider_theme'] ) ) );
+			if ( ! empty( $soliloquy_input['slider_theme'] ) && is_string( $soliloquy_input['slider_theme'] ) && '-1' !== $soliloquy_input['slider_theme'] ) {
+
+				$settings['config']['slider_theme'] = preg_replace( '#[^a-z0-9-_]#', '', sanitize_text_field( $soliloquy_input['slider_theme'] ) );
 
 			}
 
-			if ( ! empty( $_REQUEST['_soliloquy']['transition'] ) && -1 !== sanitize_text_field( wp_unslash( $_REQUEST['_soliloquy']['transition'] ) ) ) {
+			if ( ! empty( $soliloquy_input['transition'] ) && is_string( $soliloquy_input['transition'] ) && '-1' !== $soliloquy_input['transition'] ) {
 
-				$settings['config']['transition'] = preg_replace( '#[^a-z0-9-_]#', '', sanitize_text_field( wp_unslash( $_REQUEST['_soliloquy']['transition'] ) ) );
+				$settings['config']['transition'] = preg_replace( '#[^a-z0-9-_]#', '', sanitize_text_field( $soliloquy_input['transition'] ) );
 
 			}
 

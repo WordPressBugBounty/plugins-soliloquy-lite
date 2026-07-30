@@ -80,8 +80,8 @@ class Soliloquy_Editor_Lite {
 	public function media_button( $buttons ) {
 
 		// Create the media button.
-		$button  = '<style type="text/css">@media only screen and (-webkit-min-device-pixel-ratio: 2),only screen and (min--moz-device-pixel-ratio: 2),only screen and (-o-min-device-pixel-ratio: 2/1),only screen and (min-device-pixel-ratio: 2),only screen and (min-resolution: 192dpi),only screen and (min-resolution: 2dppx) { #soliloquy-media-modal-button .soliloquy-media-icon[style] { background-image: url(' . plugins_url( 'assets/css/images/editor-icon@2x.png', $this->base->file ) . ') !important; background-size: 16px 16px !important; } }</style>';
-		$button .= '<a id="soliloquy-media-modal-button" href="#" class="button soliloquy-choose-slider" title="' . esc_attr__( 'Add Slider', 'soliloquy' ) . '" style="padding-left: .4em;"><span class="soliloquy-media-icon" style="background: transparent url(' . plugins_url( 'assets/css/images/editor-icon.png', $this->base->file ) . ') no-repeat scroll 0 0; width: 16px; height: 16px; display: inline-block; vertical-align: text-top;"></span> ' . __( 'Add Slider', 'soliloquy' ) . '</a>';
+		$button  = '<style type="text/css">@media only screen and (-webkit-min-device-pixel-ratio: 2),only screen and (min--moz-device-pixel-ratio: 2),only screen and (-o-min-device-pixel-ratio: 2/1),only screen and (min-device-pixel-ratio: 2),only screen and (min-resolution: 192dpi),only screen and (min-resolution: 2dppx) { #soliloquy-media-modal-button .soliloquy-media-icon[style] { background-image: url(' . esc_url( plugins_url( 'assets/css/images/editor-icon@2x.png', $this->base->file ) ) . ') !important; background-size: 16px 16px !important; } }</style>'; // esc_url() prevents URL-based XSS in inline CSS
+		$button .= '<a id="soliloquy-media-modal-button" href="#" class="button soliloquy-choose-slider" title="' . esc_attr__( 'Add Slider', 'soliloquy' ) . '" style="padding-left: .4em;"><span class="soliloquy-media-icon" style="background: transparent url(' . esc_url( plugins_url( 'assets/css/images/editor-icon.png', $this->base->file ) ) . ') no-repeat scroll 0 0; width: 16px; height: 16px; display: inline-block; vertical-align: text-top;"></span> ' . esc_html__( 'Add Slider', 'soliloquy' ) . '</a>'; // esc_url() on CSS url(), esc_html__() on visible text to prevent XSS
 
 		// Enqueue the script that will trigger the editor button.
 		wp_enqueue_script( $this->base->plugin_slug . '-editor-script', plugins_url( 'assets/js/min/editor-min.js', $this->base->file ), [ 'jquery' ], $this->base->version, true );
@@ -101,6 +101,7 @@ class Soliloquy_Editor_Lite {
 		// @codingStandardsIgnoreStart
 		// If Elementor UI is here, then we need to output this since there's no admin_footer
 		if ( isset( $_GET['action'] ) && $_GET['action'] === 'elementor' ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- self-generated HTML with all dynamic values already escaped inside get_slider_selection_modal()
 			echo $this->get_slider_selection_modal();
 		}
 		// @codingStandardsIgnoreEnd
@@ -114,9 +115,8 @@ class Soliloquy_Editor_Lite {
 	 * @since 1.0.0
 	 */
 	public function slider_selection_modal() {
-		// @codingStandardsIgnoreStart
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- self-generated HTML with all dynamic values already escaped inside get_slider_selection_modal()
 		echo $this->get_slider_selection_modal();
-		// @codingStandardsIgnoreEnd
 	}
 
 	/**

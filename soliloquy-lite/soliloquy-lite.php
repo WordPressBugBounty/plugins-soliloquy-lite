@@ -5,7 +5,7 @@
  * Description: Soliloquy is the best responsive WordPress slider plugin. This is the lite version.
  * Author:      Soliloquy Team
  * Author URI:  https://soliloquywp.com
- * Version:     2.8.2
+ * Version:     2.8.3
  * Text Domain: soliloquy
  * Domain Path: languages
  *
@@ -58,7 +58,7 @@ class Soliloquy_Lite {
 	 *
 	 * @var string
 	 */
-	public $version = '2.8.2';
+	public $version = '2.8.3';
 
 	/**
 	 * The name of the plugin.
@@ -519,7 +519,7 @@ function soliloquy_lite_activation_hook( $network_wide ) {
 
 	global $wp_version;
 
-	// Deactivate fi Pro exists.
+	// Deactivate if Pro exists.
 	if ( class_exists( 'Soliloquy' ) ) {
 		deactivate_plugins( plugin_basename( __FILE__ ) );
 	}
@@ -533,7 +533,6 @@ function soliloquy_lite_activation_hook( $network_wide ) {
 	if ( is_multisite() && $network_wide ) {
 		global $wpdb;
 
-		// LIMIT AND OFFSET THIS UNTIL 0 VALUES.
 		$site_list = get_sites();
 		foreach ( (array) $site_list as $site ) {
 			switch_to_blog( $site->blog_id );
@@ -580,7 +579,7 @@ if ( ! function_exists( 'soliloquy' ) ) {
 		$args_string = '';
 		if ( ! empty( $args ) ) {
 			foreach ( (array) $args as $key => $value ) {
-				$args_string .= ' ' . $key . '="' . $value . '"';
+				$args_string .= ' ' . sanitize_key( $key ) . '="' . esc_attr( $value ) . '"'; // Security: sanitize_key() and esc_attr() to prevent XSS via shortcode attribute injection
 			}
 		}
 

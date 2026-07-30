@@ -105,7 +105,7 @@ class Soliloquy_Media_Lite {
 		$max_upload_size = wp_max_upload_size();
 
 		?>
-		<script type="text/javascript">var resize_width = <?php echo esc_attr( $width ); ?>, resize_height = <?php echo esc_attr( $height ); ?>;</script>
+		<script type="text/javascript">var resize_width = <?php echo (int) $width; // Security: cast to int for JS context instead of esc_attr() which is for HTML attributes ?>, resize_height = <?php echo (int) $height; // Security: cast to int for JS context instead of esc_attr() which is for HTML attributes ?>;</script>
 		<div id="soliloquy-upload-error"></div>
 		<div id="soliloquy-plupload-upload-ui" class="hide-if-no-js">
 			<?php do_action( 'pre-plupload-upload-ui' ); // phpcs:ignore WordPress.NamingConventions.ValidHookName.UseUnderscores ?>

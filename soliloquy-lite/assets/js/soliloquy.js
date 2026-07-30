@@ -261,7 +261,16 @@ function soliloquyInitManually() {
 				},
 				function (response) {
 					if (response !== '-1' && response !== '0') {
-						eval(response);
+						// Inject as a <script> element instead of eval(): execution moves to
+						// global scope and the site can forbid `unsafe-eval` in its CSP. The
+						// response is still executed verbatim — this is not a mitigation against
+						// a compromised same-origin admin-ajax response. A follow-up should make
+						// the endpoint return structured JSON config initialized by a fixed
+						// local function.
+						var script = document.createElement('script');
+						script.text = response;
+						document.body.appendChild(script);
+						document.body.removeChild(script);
 					}
 				}
 			);

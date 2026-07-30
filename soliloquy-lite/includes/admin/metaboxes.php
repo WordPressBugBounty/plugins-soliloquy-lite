@@ -1046,7 +1046,7 @@ endforeach;
 											</p>
 				<p><?php esc_attr_e( 'By upgrading to Soliloquy Pro, you can create a responsive carousel slider in WordPress for your images, photos, videos, and even galleries.', 'soliloquy' ); ?></p>
 
-				<a href="<?php echo esc_html( $this->common->get_upgrade_link() ); ?>" target="_blank" class="button button-soliloquy"><?php esc_attr_e( 'Click here to Upgrade', 'soliloquy' ); ?></a>
+				<a href="<?php echo esc_url( $this->common->get_upgrade_link() ); ?>" target="_blank" class="button button-soliloquy"><?php esc_attr_e( 'Click here to Upgrade', 'soliloquy' ); ?></a>
 
 			</div>
 
@@ -1301,7 +1301,7 @@ endforeach;
 			ob_start();
 		?>
 
-			<li id="<?php echo esc_attr( $id ); ?>" class="soliloquy-slide soliloquy-image soliloquy-status-<?php echo esc_attr( $data['status'] ); ?>" data-soliloquy-slide="<?php echo esc_attr( $id ); ?>" data-soliloquy-image-model='<?php echo esc_html( htmlspecialchars( $json, ENT_QUOTES, 'UTF-8' ) ); ?>'>
+			<li id="<?php echo esc_attr( $id ); ?>" class="soliloquy-slide soliloquy-image soliloquy-status-<?php echo esc_attr( $data['status'] ); ?>" data-soliloquy-slide="<?php echo esc_attr( $id ); ?>" data-soliloquy-image-model='<?php echo esc_attr( $json ); ?>'><?php // Security: use esc_attr() alone — esc_html(htmlspecialchars()) triple-encodes &, ", < breaking jQuery.parseJSON() ?>
 				<a href="#" class="check"><div class="media-modal-icon"></div></a>
 
 				<a href="#" class="soliloquy-remove-slide" title="<?php esc_attr_e( 'Remove Image Slide from Slider?', 'soliloquy' ); ?>"><i class="soliloquy-icon-close"></i></a>

@@ -216,9 +216,19 @@ class Soliloquy_Common_Lite {
 		// Unpack variables if an array, otherwise return WP_Error.
 		if ( is_wp_error( $common ) ) {
 			return $common;
-		} else {
-			extract( $common );
 		}
+
+		$dir            = $common['dir'];
+		$name           = $common['name'];
+		$ext            = $common['ext'];
+		$suffix         = $common['suffix'];
+		$orig_width     = $common['orig_width'];
+		$orig_height    = $common['orig_height'];
+		$orig_type      = $common['orig_type'];
+		$dest_width     = $common['dest_width'];
+		$dest_height    = $common['dest_height'];
+		$file_path      = $common['file_path'];
+		$dest_file_name = $common['dest_file_name'];
 
 		// If the destination width/height values are the same as the original, don't do anything.
 		if ( $orig_width === $dest_width && $orig_height === $dest_height ) {
@@ -354,9 +364,16 @@ class Soliloquy_Common_Lite {
 			$pathinfo    = wp_parse_url( $url );
 			$uploads_dir = is_multisite() ? '/files/' : '/wp-content/';
 			if ( isset( $_SERVER['SCRIPT_NAME'] ) ) {
-				$file_path = ABSPATH . str_replace( dirname( sanitize_text_field( wp_unslash( $_SERVER['SCRIPT_NAME'] ) ) ) . '/', '', strstr( $pathinfo['path'], $uploads_dir ) );
+				// Sanitize SCRIPT_NAME. Path traversal is rejected by the realpath/ABSPATH boundary check below;
+				// a naive str_replace( '..', '' ) filter is bypassable (e.g. `....//`) so we rely on realpath instead.
+				$script_name = sanitize_text_field( wp_unslash( $_SERVER['SCRIPT_NAME'] ) );
+				$file_path   = ABSPATH . str_replace( dirname( $script_name ) . '/', '', strstr( $pathinfo['path'], $uploads_dir ) );
 			}
 			$file_path = preg_replace( '/(\/\/)/', '/', $file_path );
+			// Ensure resolved path stays within ABSPATH to prevent path traversal
+			if ( ! isset( $file_path ) || 0 !== strpos( realpath( dirname( $file_path ) ) . '/', realpath( ABSPATH ) . '/' ) ) {
+				return new WP_Error( 'soliloquy-error-invalid-path', __( 'Invalid file path.', 'soliloquy' ) );
+			}
 		}
 
 		// Don't process a file that does not exist.

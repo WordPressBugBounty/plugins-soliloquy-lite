@@ -68,9 +68,6 @@ class Soliloquy_Common_Admin_Lite {
 		add_action( 'delete_attachment', [ $this, 'delete_slider_association' ] );
 		add_action( 'delete_attachment', [ $this, 'delete_cropped_image' ] );
 
-		// Ensure slider display is correct when trashing/untrashing sliders.
-		add_action( 'wp_trash_post', [ $this, 'trash_slider' ] );
-		add_action( 'untrash_post', [ $this, 'untrash_slider' ] );
 		add_filter( 'admin_footer_text', [ $this, 'admin_footer' ], 1, 2 );
 		add_action( 'in_admin_footer', [ $this, 'footer_template' ] );
 		add_action( 'admin_footer', [ $this, 'notifications_template' ] );
@@ -423,64 +420,52 @@ class Soliloquy_Common_Admin_Lite {
 	/**
 	 * Trash a slider when the slider post type is trashed.
 	 *
+	 * Kept as a pass-through for anything that called it directly. The hook now
+	 * lives on Soliloquy_Lifecycle_Lite, which loads on every request rather than
+	 * only inside wp-admin -- see includes/global/lifecycle.php.
+	 *
 	 * @since 1.0.0
 	 *
-	 * @param int $id   The post ID being trashed.
-	 * @return null Return early if no slider is found.
+	 * @param int $id The post ID being trashed.
+	 * @return void
 	 */
 	public function trash_slider( $id ) {
 
-		$slider = get_post( $id );
-
-		// Flush necessary slider caches to ensure trashed sliders are not showing.
-		Soliloquy_Common_Lite::get_instance()->flush_slider_caches( $id );
-
-		// Return early if not an Soliloquy slider.
-		if ( 'soliloquyv2' !== $slider->post_type ) {
-			return;
-		}
-
-		// Set the slider status to inactive.
-		$slider_data = get_post_meta( $id, '_sol_slider_data', true );
-		if ( empty( $slider_data ) ) {
-			return;
-		}
-
-		$slider_data['status'] = 'inactive';
-		update_post_meta( $id, '_sol_slider_data', $slider_data );
+		( new Soliloquy_Lifecycle_Lite() )->trash_slider( $id );
 	}
 
 	/**
 	 * Untrash a slider when the slider post type is untrashed.
 	 *
+	 * Kept as a pass-through for anything that called it directly. The hook now
+	 * lives on Soliloquy_Lifecycle_Lite, which loads on every request rather than
+	 * only inside wp-admin -- see includes/global/lifecycle.php.
+	 *
 	 * @since 1.0.0
 	 *
-	 * @param  int $id   The post ID being untrashed.
+	 * @param int $id The post ID being untrashed.
 	 * @return void
 	 */
 	public function untrash_slider( $id ) {
 
-		$slider = get_post( $id );
+		( new Soliloquy_Lifecycle_Lite() )->untrash_slider( $id );
+	}
 
-		// Flush necessary slider caches to ensure untrashed sliders are showing.
-		Soliloquy_Common_Lite::get_instance()->flush_slider_caches( $id );
+	/**
+	 * Flush a slider's caches before it is deleted for good.
+	 *
+	 * Kept as a pass-through for anything that called it directly. The hook now
+	 * lives on Soliloquy_Lifecycle_Lite, which loads on every request rather than
+	 * only inside wp-admin -- see includes/global/lifecycle.php.
+	 *
+	 * @since 2.8.5
+	 *
+	 * @param int $id The post ID being deleted.
+	 * @return void
+	 */
+	public function delete_slider( $id ) {
 
-		// Return early if not an Soliloquy slider.
-		if ( 'soliloquyv2' !== $slider->post_type ) {
-			return;
-		}
-
-		// Set the slider status to inactive.
-		$slider_data = get_post_meta( $id, '_sol_slider_data', true );
-		if ( empty( $slider_data ) ) {
-			return;
-		}
-
-		if ( isset( $slider_data['status'] ) ) {
-			unset( $slider_data['status'] );
-		}
-
-		update_post_meta( $id, '_sol_slider_data', $slider_data );
+		( new Soliloquy_Lifecycle_Lite() )->delete_slider( $id );
 	}
 
 	/**

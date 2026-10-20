@@ -151,13 +151,20 @@ class Soliloquy_Shortcode_Lite {
 		global $post;
 
 		// If no attributes have been passed, the slider should be pulled from the current post.
-		$slider_id = false;
+		// $slider_post_id is the post the data below was read from, recorded only where the
+		// lookup makes that unambiguous: an ID lookup reads that post's own meta, so the ID
+		// is authoritative, while a slug lookup can only report the ID stored inside the
+		// data it found. is_trashed_slider() needs that distinction -- see its docblock.
+		$slider_id      = false;
+		$slider_post_id = 0;
 		if ( empty( $atts ) ) {
-			$slider_id = $post->ID;
-			$data      = is_preview() ? $this->base->_get_slider( $slider_id ) : $this->base->get_slider( $slider_id );
+			$slider_id      = $post->ID;
+			$slider_post_id = (int) $post->ID;
+			$data           = is_preview() ? $this->base->_get_slider( $slider_id ) : $this->base->get_slider( $slider_id );
 		} elseif ( isset( $atts['id'] ) ) {
-			$slider_id = (int) $atts['id'];
-			$data      = is_preview() ? $this->base->_get_slider( $slider_id ) : $this->base->get_slider( $slider_id );
+			$slider_id      = (int) $atts['id'];
+			$slider_post_id = (int) $atts['id'];
+			$data           = is_preview() ? $this->base->_get_slider( $slider_id ) : $this->base->get_slider( $slider_id );
 		} elseif ( isset( $atts['slug'] ) ) {
 			$slider_id = $atts['slug'];
 			$data      = is_preview() ? $this->base->_get_slider_by_slug( $slider_id ) : $this->base->get_slider_by_slug( $slider_id );
@@ -169,11 +176,29 @@ class Soliloquy_Shortcode_Lite {
 		// If there is no data and the attribute used is an ID, try slug as well.
 		if ( ! $data && isset( $atts['id'] ) ) {
 			$slider_id = $atts['id'];
-			$data      = is_preview() ? $this->base->_get_slider_by_slug( $slider_id ) : $this->base->get_slider_by_slug( $slider_id );
+			// The data no longer comes from that ID's own meta, so it no longer identifies
+			// the slider being rendered.
+			$slider_post_id = 0;
+			$data           = is_preview() ? $this->base->_get_slider_by_slug( $slider_id ) : $this->base->get_slider_by_slug( $slider_id );
 		}
 
 		// Allow the data to be filtered before it is stored and used to create the slider output.
 		$this->slider_data = apply_filters( 'soliloquy_pre_data', $data, $slider_id );
+
+		// A slider in the Trash must never render, whatever the stored or cached data
+		// says. The 'inactive' sentinel below is only written at the moment a slider is
+		// trashed, so a slider that was already in the Trash before that write existed --
+		// or one trashed by anything that bypasses the hooks, such as a direct database
+		// edit or an import -- carries no sentinel at all. Reading the post status is the
+		// only check that covers those, and it is read fresh rather than from the day-long
+		// _sol_cache_* transients the data above may have come out of. See #123.
+		//
+		// Only the Trash is checked here. Draft, pending and private sliders still render
+		// by ID, which is the wider gap tracked for the sibling plugin in
+		// awesomemotive/envira-gallery-lite#351 and deliberately out of scope for #123.
+		if ( $this->is_trashed_slider( $slider_post_id ) ) {
+			return false;
+		}
 
 		// If there is no data to output or the slider is inactive, do nothing.
 		if ( ! $this->slider_data || empty( $this->slider_data['slider'] ) || ( isset( $this->slider_data['status'] ) && 'inactive' === $this->slider_data['status'] && ! is_preview() ) ) {
@@ -838,6 +863,40 @@ class Soliloquy_Shortcode_Lite {
 		}
 
 		return self::$instance;
+	}
+
+	/**
+	 * Whether the slider being rendered is in the Trash.
+	 *
+	 * Takes the post ID the caller resolved the slider data from and reads that post's
+	 * status. Only 'trash' is treated as non-renderable; draft, pending and private
+	 * sliders are a separate concern and are deliberately left alone.
+	 *
+	 * The ID the embed resolved to is used in preference to the one inside the slider
+	 * data, which is not reliably the slider's own post ID: a slider duplicated by a
+	 * duplication plugin or by WPML keeps the original's stored ID until it is re-saved
+	 * in the admin, which is why includes/admin/metaboxes.php force-corrects it on save.
+	 * Trusting the stored ID would make this gate read the wrong post -- letting a
+	 * trashed duplicate through when the original is published, and hiding a published
+	 * slider when the original is in the Trash. The stored ID is still the only thing
+	 * available for a slug embed or a custom data source, so it remains the fallback,
+	 * guarded on being numeric because a custom source may use a non-numeric one.
+	 *
+	 * @since 2.8.6
+	 *
+	 * @param int $slider_post_id The post the slider data was read from, or 0 when the
+	 *                            lookup could not identify one.
+	 * @return bool True if the slider's post is in the Trash.
+	 */
+	private function is_trashed_slider( $slider_post_id ) {
+
+		$post_id = (int) $slider_post_id;
+
+		if ( $post_id < 1 && ! empty( $this->slider_data['id'] ) && is_numeric( $this->slider_data['id'] ) ) {
+			$post_id = (int) $this->slider_data['id'];
+		}
+
+		return $post_id > 0 && 'trash' === get_post_status( $post_id );
 	}
 }
 

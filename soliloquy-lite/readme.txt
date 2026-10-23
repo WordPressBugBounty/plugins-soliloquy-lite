@@ -4,7 +4,7 @@ Tags: slideshow, carousel, video slider, gallery slider, instagram slider
 Requires at least: 5.7.0
 Tested up to: 7.1
 Requires PHP: 7.0
-Stable tag: 2.8.5
+Stable tag: 2.8.6
 License: GNU General Public License v2.0 or later
 
 The best WordPress slider plugin. Drag & Drop responsive slider builder that helps you create a beautiful image slideshows with just a few clicks.
@@ -258,6 +258,13 @@ In v2.0 of Soliloquy Lite, we introduce a big plugin architecture change. You ne
 The pro version of Soliloquy has many more features and enables you to do so much more than Soliloquy Lite, such as add images from your Media Library and use your own custom videos from YouTube, Vimeo and Wistia!
 
 == Changelog ==
+
+= 2.8.6 =
+* Fixed: Soliloquy Lite now runs on PHP 8.2 without warnings or notices, including sliders whose images were deleted from the Media Library.
+* Fixed: The image alt text now shows in the slider editor's slide grid.
+* Fixed: Authors can no longer refresh the slides of a slider owned by another user.
+* Fixed: The Addons page no longer crashes when the add-on store returns an error.
+* Fixed: Connecting Soliloquy Pro for the first time on a site running only Soliloquy Lite no longer causes a fatal error.
 
 = 2.8.5 =
 * Fixed: Sliders moved to the Trash or permanently deleted no longer keep showing on the front end, including sliders trashed before this update.

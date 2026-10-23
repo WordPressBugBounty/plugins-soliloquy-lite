@@ -216,7 +216,13 @@ class Soliloquy_Addons {
 			if ( $upgrade_addons ) :
 				$i = 0;
 
-				foreach ( (array) $upgrade_addons as $i => $addon ) {
+				// A store error reply is a JSON object, not a list: iterate addon objects only. $i is the
+				// position counter (advanced at the end of the loop), so it is not the array key.
+				foreach ( ( is_array( $upgrade_addons ) ? $upgrade_addons : array() ) as $addon ) {
+					if ( ! is_object( $addon ) || empty( $addon->slug ) ) {
+						continue;
+					}
+
 					// Attempt to get the plugin basename if it is installed or active.
 					$plugin_basename   = $this->get_plugin_basename_from_slug( $addon->slug );
 					$installed_plugins = get_plugins();

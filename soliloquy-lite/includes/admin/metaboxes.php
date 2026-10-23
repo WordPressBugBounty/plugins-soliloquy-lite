@@ -1267,6 +1267,7 @@ endforeach;
 	 */
 	public function get_slider_item( $id, $data, $type, $post_id = 0 ) {
 
+		$item = '';
 		switch ( $type ) {
 			case 'image':
 				$item = $this->get_slider_image( $id, $data, $post_id );
@@ -1309,7 +1310,7 @@ endforeach;
 				<a href="#" class="soliloquy-modify-slide" title="<?php esc_attr_e( 'Modify Image Slide', 'soliloquy' ); ?>"><i class="soliloquy-icon-pencil"></i></a>
 
 				<div class="soliloquy-item-content">
-				<img class="soliloquy-item-img" src="<?php echo esc_url( $thumbnail[0] ); ?>" alt="<?php esc_attr( $data['alt'] ); ?>" />
+				<img class="soliloquy-item-img" src="<?php echo esc_url( ! empty( $thumbnail[0] ) ? $thumbnail[0] : '' ); ?>" alt="<?php echo esc_attr( isset( $data['alt'] ) ? $data['alt'] : '' ); ?>" />
 
 				<div class="soliloquy-item-info">
 

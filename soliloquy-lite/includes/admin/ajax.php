@@ -697,7 +697,7 @@ class Soliloquy_Ajax {
 
 		// Prepare variables.
 		$attach_id   = isset( $_POST['attach_id'] ) ? absint( $_POST['attach_id'] ) : 0;
-		$raw_meta    = isset( $_POST['meta'] ) ? wp_unslash( $_POST['meta'] ) : false;
+		$raw_meta    = isset( $_POST['meta'] ) ? wp_unslash( $_POST['meta'] ) : false; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- array, allowlisted and sanitized per key below.
 		$slider_data = get_post_meta( $post_id, '_sol_slider_data', true );
 
 		if ( ! is_array( $raw_meta ) ) {
@@ -807,8 +807,8 @@ class Soliloquy_Ajax {
 		}
 
 		// Prepare variables — sanitize image IDs to integers only.
-		$raw_image_ids = isset( $_POST['image_ids'] ) ? wp_unslash( $_POST['image_ids'] ) : false;
-		$raw_meta      = isset( $_POST['meta'] ) ? wp_unslash( $_POST['meta'] ) : false;
+		$raw_image_ids = isset( $_POST['image_ids'] ) ? wp_unslash( $_POST['image_ids'] ) : false; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- array, cast with absint below.
+		$raw_meta      = isset( $_POST['meta'] ) ? wp_unslash( $_POST['meta'] ) : false; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- array, allowlisted and sanitized per key below.
 
 		if ( ! is_array( $raw_image_ids ) || ! is_array( $raw_meta ) ) {
 			wp_send_json_error();
@@ -916,6 +916,11 @@ class Soliloquy_Ajax {
 			echo wp_json_encode( [ 'error' => true ] );
 			die;
 		}
+
+		// The slides belong to one slider, so check that slider, as Pro does.
+		if ( ! current_user_can( 'edit_post', $post_id ) ) {
+			wp_send_json_error( [ 'message' => esc_html__( 'You are not allowed to edit sliders.', 'soliloquy' ) ] );
+		}
 		// Grab all slider data.
 		$slider_data = get_post_meta( $post_id, '_sol_slider_data', true );
 
@@ -927,7 +932,7 @@ class Soliloquy_Ajax {
 
 		// Loop through the data and build out the slider view.
 		foreach ( (array) $slider_data['slider'] as $id => $data ) {
-			$slider .= Soliloquy_Metaboxes_Lite::get_instance()->get_slider_item( $id, $data, $data['type'], $post_id );
+			$slider .= Soliloquy_Metaboxes_Lite::get_instance()->get_slider_item( $id, $data, ! empty( $data['type'] ) ? $data['type'] : 'image', $post_id );
 		}
 
 		echo wp_json_encode( [ 'success' => $slider ] );
@@ -1116,6 +1121,9 @@ class Soliloquy_Ajax {
 		$view = isset( $_POST['view'] ) ? trim( sanitize_text_field( wp_unslash( $_POST['view'] ) ) ) : false;
 
 		$slider_data = get_post_meta( $post_id, '_sol_slider_data', true );
+		if ( ! is_array( $slider_data ) ) {
+			$slider_data = array();
+		}
 
 		// Save the different types of default meta fields for images, videos and HTML slides.
 		if ( false !== $view ) {
@@ -1421,9 +1429,13 @@ class Soliloquy_Ajax {
 			wp_send_json_error( [ 'message' => wp_kses_post( $valid_key->error ) ] );
 		}
 
-		$option                = get_option( 'soliloquy' );
+		// A Lite-only site has never stored this option.
+		$option = get_option( 'soliloquy' );
+		if ( ! is_array( $option ) ) {
+			$option = [];
+		}
 		$option['key']         = $key;
-		$option['type']        = isset( $valid_key->type ) ? $valid_key->type : $option['type'];
+		$option['type']        = isset( $valid_key->type ) ? $valid_key->type : ( isset( $option['type'] ) ? $option['type'] : '' );
 		$option['is_expired']  = false;
 		$option['is_disabled'] = false;
 		$option['is_invalid']  = false;

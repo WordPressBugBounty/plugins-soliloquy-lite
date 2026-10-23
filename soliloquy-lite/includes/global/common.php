@@ -358,16 +358,17 @@ class Soliloquy_Common_Lite {
 		$wp_upload_dir = wp_upload_dir();
 
 		// Interpret the file path of the image.
-		if ( preg_match( '/\/[0-9]{4}\/[0-9]{2}\/.+$/', $urlinfo['path'], $matches ) ) {
+		// A URL without a path (a bare domain) has no 'path' key.
+		$url_path = isset( $urlinfo['path'] ) ? $urlinfo['path'] : '';
+		if ( preg_match( '/\/[0-9]{4}\/[0-9]{2}\/.+$/', $url_path, $matches ) ) {
 			$file_path = $wp_upload_dir['basedir'] . $matches[0];
 		} else {
-			$pathinfo    = wp_parse_url( $url );
 			$uploads_dir = is_multisite() ? '/files/' : '/wp-content/';
 			if ( isset( $_SERVER['SCRIPT_NAME'] ) ) {
 				// Sanitize SCRIPT_NAME. Path traversal is rejected by the realpath/ABSPATH boundary check below;
 				// a naive str_replace( '..', '' ) filter is bypassable (e.g. `....//`) so we rely on realpath instead.
 				$script_name = sanitize_text_field( wp_unslash( $_SERVER['SCRIPT_NAME'] ) );
-				$file_path   = ABSPATH . str_replace( dirname( $script_name ) . '/', '', strstr( $pathinfo['path'], $uploads_dir ) );
+				$file_path   = ABSPATH . str_replace( dirname( $script_name ) . '/', '', (string) strstr( $url_path, $uploads_dir ) );
 			}
 			$file_path = preg_replace( '/(\/\/)/', '/', $file_path );
 			// Ensure resolved path stays within ABSPATH to prevent path traversal

@@ -588,14 +588,14 @@ class Soliloquy_Shortcode_Lite {
 		if ( ! $image ) {
 			$image = ! empty( $item['src'] ) ? $item['src'] : false;
 			if ( ! $image ) {
-				return apply_filters( 'soliloquy_no_image_src', $item['link'], $id, $item, $data );
+				return apply_filters( 'soliloquy_no_image_src', isset( $item['link'] ) ? $item['link'] : '', $id, $item, $data );
 			}
 		}
 
 		// Generate the cropped image if necessary.
 		$type = 'thumbnails' !== $type ? apply_filters( 'soliloquy_crop_type', $type, $id, $item, $data ) : $type;
 		if ( empty( $type ) ) {
-			return apply_filters( 'soliloquy_no_image_type', $item['link'], $id, $item, $data );
+			return apply_filters( 'soliloquy_no_image_type', isset( $item['link'] ) ? $item['link'] : '', $id, $item, $data );
 		}
 
 		// If the setting exists, go onward with cropping.

@@ -5,7 +5,7 @@
  * Description: Soliloquy is the best responsive WordPress slider plugin. This is the lite version.
  * Author:      Soliloquy Team
  * Author URI:  https://soliloquywp.com
- * Version:     2.8.5
+ * Version:     2.8.6
  * Text Domain: soliloquy
  * Domain Path: languages
  *
@@ -58,7 +58,7 @@ class Soliloquy_Lite {
 	 *
 	 * @var string
 	 */
-	public $version = '2.8.5';
+	public $version = '2.8.6';
 
 	/**
 	 * The name of the plugin.
@@ -407,7 +407,8 @@ class Soliloquy_Lite {
 	 */
 	public static function get_file() {
 
-		return self::$file;
+		// $file is an instance property; reading it as self::$file was a fatal error.
+		return self::get_instance()->file;
 	}
 	/**
 	 * Loads Admin Partial

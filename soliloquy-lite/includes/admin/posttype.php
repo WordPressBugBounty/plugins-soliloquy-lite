@@ -502,7 +502,7 @@ class Soliloquy_Lite_Posttype_Admin {
 			}
 
 			// Validate $_REQUEST['_soliloquy'] is an array before accessing nested keys
-			$soliloquy_input = isset( $_REQUEST['_soliloquy'] ) && is_array( $_REQUEST['_soliloquy'] ) ? wp_unslash( $_REQUEST['_soliloquy'] ) : [];
+			$soliloquy_input = isset( $_REQUEST['_soliloquy'] ) && is_array( $_REQUEST['_soliloquy'] ) ? wp_unslash( $_REQUEST['_soliloquy'] ) : []; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- array, each key used is sanitized below.
 
 			if ( ! empty( $soliloquy_input['slider_theme'] ) && is_string( $soliloquy_input['slider_theme'] ) && '-1' !== $soliloquy_input['slider_theme'] ) {
 

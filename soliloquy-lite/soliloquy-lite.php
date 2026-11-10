@@ -5,7 +5,7 @@
  * Description: Soliloquy is the best responsive WordPress slider plugin. This is the lite version.
  * Author:      Soliloquy Team
  * Author URI:  https://soliloquywp.com
- * Version:     2.8.6
+ * Version:     2.8.7
  * Text Domain: soliloquy
  * Domain Path: languages
  *
@@ -58,7 +58,7 @@ class Soliloquy_Lite {
 	 *
 	 * @var string
 	 */
-	public $version = '2.8.6';
+	public $version = '2.8.7';
 
 	/**
 	 * The name of the plugin.
@@ -365,6 +365,83 @@ class Soliloquy_Lite {
 	 */
 	public function _get_sliders() { // phpcs:ignore PSR2.Methods.MethodDeclaration.Underscore
 
+		$ids = $this->get_published_slider_ids();
+
+		if ( empty( $ids ) ) {
+			return false;
+		}
+
+		// Now loop through all the sliders found and only use sliders that have images in them.
+		$ret = [];
+		foreach ( $ids as $id ) {
+
+			$data = get_post_meta( $id, '_sol_slider_data', true );
+			if ( ! $this->is_listed_slider( $data ) ) {
+				continue;
+			}
+
+			$ret[] = $data;
+		}
+
+		// Return the slider data.
+		return $ret;
+	}
+
+	/**
+	 * Returns the ID of the published slider post a slug resolves to.
+	 *
+	 * Picks the same slider _get_slider_by_slug() would on a cold cache -- the first
+	 * slider in _get_sliders() whose slug matches -- but returns the ID of the post it
+	 * was read from, and reads it fresh rather than from the day-long _sol_cache_all
+	 * transient. That transient keeps a slider listed after its status changes by any
+	 * route that does not flush it (Quick Edit, Bulk Edit, REST, wp_update_post()), and
+	 * the 'id' stored inside a listed slider's data is not reliably its own post ID: a
+	 * duplicated or WPML-translated slider keeps the original's until it is re-saved.
+	 *
+	 * @since 2.8.7
+	 *
+	 * @param string $slug The slider slug.
+	 * @return int         The slider's post ID, or 0 if no published slider has that slug.
+	 */
+	public function get_slider_post_id_by_slug( $slug ) {
+
+		if ( ! is_string( $slug ) || '' === $slug ) {
+			return 0;
+		}
+
+		$ids = $this->get_published_slider_ids();
+
+		if ( empty( $ids ) ) {
+			return 0;
+		}
+
+		// One query for every slider's meta instead of one per slider.
+		update_meta_cache( 'post', $ids );
+
+		foreach ( $ids as $id ) {
+
+			$data = get_post_meta( $id, '_sol_slider_data', true );
+			if ( ! $this->is_listed_slider( $data ) || empty( $data['config']['slug'] ) ) {
+				continue;
+			}
+
+			if ( $data['config']['slug'] === $slug ) {
+				return (int) $id;
+			}
+		}
+
+		return 0;
+	}
+
+	/**
+	 * Returns the IDs of the published sliders, newest first, as _get_sliders() lists them.
+	 *
+	 * @since 2.8.7
+	 *
+	 * @return int[] Slider post IDs.
+	 */
+	private function get_published_slider_ids() {
+
 		$sliders = new WP_Query(
 			[
 				'post_type'      => 'soliloquy',
@@ -380,24 +457,22 @@ class Soliloquy_Lite {
 			]
 		);
 
-		if ( ! isset( $sliders->posts ) || empty( $sliders->posts ) ) {
-			return false;
-		}
+		return isset( $sliders->posts ) ? array_map( 'intval', (array) $sliders->posts ) : [];
+	}
 
-		// Now loop through all the sliders found and only use sliders that have images in them.
-		$ret = [];
-		foreach ( $sliders->posts as $id ) {
+	/**
+	 * Whether _get_sliders() lists a slider: it has images, or is not a default slider, and is not dynamic.
+	 *
+	 * @since 2.8.7
+	 *
+	 * @param mixed $data The slider's _sol_slider_data meta.
+	 * @return bool
+	 */
+	private function is_listed_slider( $data ) {
 
-			$data = get_post_meta( $id, '_sol_slider_data', true );
-			if ( ( empty( $data['slider'] ) && 'default' === Soliloquy_Shortcode_Lite::get_instance()->get_config( 'type', $data ) ) || 'dynamic' === Soliloquy_Shortcode_Lite::get_instance()->get_config( 'type', $data ) ) {
-				continue;
-			}
+		$type = Soliloquy_Shortcode_Lite::get_instance()->get_config( 'type', $data );
 
-			$ret[] = $data;
-		}
-
-		// Return the slider data.
-		return $ret;
+		return ! ( ( empty( $data['slider'] ) && 'default' === $type ) || 'dynamic' === $type );
 	}
 
 	/**

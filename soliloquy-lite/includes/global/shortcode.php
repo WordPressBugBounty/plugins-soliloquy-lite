@@ -151,10 +151,10 @@ class Soliloquy_Shortcode_Lite {
 		global $post;
 
 		// If no attributes have been passed, the slider should be pulled from the current post.
-		// $slider_post_id is the post the data below was read from, recorded only where the
-		// lookup makes that unambiguous: an ID lookup reads that post's own meta, so the ID
-		// is authoritative, while a slug lookup can only report the ID stored inside the
-		// data it found. is_trashed_slider() needs that distinction -- see its docblock.
+		// $slider_post_id is the post the data below was read from. Every built-in lookup reads
+		// one post's own meta -- a slug is resolved to its post first -- so that ID identifies
+		// the slider being rendered, unlike the 'id' stored inside the data, which a duplicated
+		// slider shares with its original. Only a custom data source leaves it at 0.
 		$slider_id      = false;
 		$slider_post_id = 0;
 		if ( empty( $atts ) ) {
@@ -166,8 +166,9 @@ class Soliloquy_Shortcode_Lite {
 			$slider_post_id = (int) $atts['id'];
 			$data           = is_preview() ? $this->base->_get_slider( $slider_id ) : $this->base->get_slider( $slider_id );
 		} elseif ( isset( $atts['slug'] ) ) {
-			$slider_id = $atts['slug'];
-			$data      = is_preview() ? $this->base->_get_slider_by_slug( $slider_id ) : $this->base->get_slider_by_slug( $slider_id );
+			$slider_id      = $atts['slug'];
+			$slider_post_id = $this->base->get_slider_post_id_by_slug( $slider_id );
+			$data           = $this->get_slider_data_by_post_id( $slider_post_id );
 		} else {
 			// A custom attribute must have been passed. Allow it to be filtered to grab data from a custom source.
 			$data = apply_filters( 'soliloquy_custom_slider_data', false, $atts, $post );
@@ -175,11 +176,9 @@ class Soliloquy_Shortcode_Lite {
 
 		// If there is no data and the attribute used is an ID, try slug as well.
 		if ( ! $data && isset( $atts['id'] ) ) {
-			$slider_id = $atts['id'];
-			// The data no longer comes from that ID's own meta, so it no longer identifies
-			// the slider being rendered.
-			$slider_post_id = 0;
-			$data           = is_preview() ? $this->base->_get_slider_by_slug( $slider_id ) : $this->base->get_slider_by_slug( $slider_id );
+			$slider_id      = $atts['id'];
+			$slider_post_id = $this->base->get_slider_post_id_by_slug( $slider_id );
+			$data           = $this->get_slider_data_by_post_id( $slider_post_id );
 		}
 
 		// Allow the data to be filtered before it is stored and used to create the slider output.
@@ -193,10 +192,18 @@ class Soliloquy_Shortcode_Lite {
 		// only check that covers those, and it is read fresh rather than from the day-long
 		// _sol_cache_* transients the data above may have come out of. See #123.
 		//
-		// Only the Trash is checked here. Draft, pending and private sliders still render
-		// by ID, which is the wider gap tracked for the sibling plugin in
-		// awesomemotive/envira-gallery-lite#351 and deliberately out of scope for #123.
+		// This runs before the visibility check below and whoever is viewing: a user who may
+		// read the trashed post still never sees it rendered.
 		if ( $this->is_trashed_slider( $slider_post_id ) ) {
+			return false;
+		}
+
+		// Likewise a slider that is not published -- private, scheduled, draft or pending --
+		// renders only to a user who may read it. Its meta and the cached copies of it are
+		// unaffected by a status change, so the status is read here, from the post the data
+		// was read from. Previews get no exemption: an editor previewing a page passes
+		// read_post, a logged-out ?preview=true does not. See #125.
+		if ( ! $this->can_view_slider( $slider_post_id ) ) {
 			return false;
 		}
 
@@ -866,11 +873,96 @@ class Soliloquy_Shortcode_Lite {
 	}
 
 	/**
+	 * Loads a slider's data by the ID of the post it lives on, as the ID route does.
+	 *
+	 * Used by the slug route once the slug has been resolved to a post, so the data
+	 * rendered is the data of the post can_view_slider() checks, never a cached list
+	 * entry that may belong to another post or predate a status change.
+	 *
+	 * @since 2.8.7
+	 *
+	 * @param int $slider_post_id The slider's post ID, or 0 when none was found.
+	 * @return array|false        The slider data, or false.
+	 */
+	private function get_slider_data_by_post_id( $slider_post_id ) {
+
+		if ( $slider_post_id < 1 ) {
+			return false;
+		}
+
+		return is_preview() ? $this->base->_get_slider( $slider_post_id ) : $this->base->get_slider( $slider_post_id );
+	}
+
+	/**
+	 * Whether the current visitor may see the slider being rendered.
+	 *
+	 * A slider whose status is public ('publish') renders for everyone, and no capability
+	 * is consulted for it: Soliloquy_Posttype_Lite::map_meta_cap() denies authors
+	 * read_post on sliders they do not own, so asking would hide published sliders from
+	 * them. Any other status needs read_post on the slider's post, which that mapping
+	 * resolves to read_private_posts for a private slider and to the edit capabilities
+	 * for a scheduled, draft or pending one -- so a logged-out visitor never passes. The
+	 * slider's own author is let through whatever the status, as core does for any post.
+	 *
+	 * An ID of 0 means no post is behind the data: only a custom data source, or data a
+	 * soliloquy_pre_data callback supplied where no slider was found, gets here with it,
+	 * because every built-in lookup that finds data records the post it read. A positive
+	 * ID whose post no longer exists is not let through: its data can only be coming out
+	 * of a stale _sol_cache_* transient.
+	 *
+	 * @since 2.8.7
+	 *
+	 * @param int $slider_post_id The post the slider data was read from, or 0 when the
+	 *                            lookup could not identify one.
+	 * @return bool True if the slider may be rendered for the current visitor.
+	 */
+	private function can_view_slider( $slider_post_id ) {
+
+		$post_id = (int) $slider_post_id;
+
+		// Never ask get_post_status( 0 ): it reads the global post, which is the page the
+		// slider is embedded in, not the slider.
+		if ( $post_id < 1 ) {
+			return true;
+		}
+
+		$status = get_post_status( $post_id );
+
+		if ( false === $status ) {
+			return false;
+		}
+
+		$status_object = get_post_status_object( $status );
+
+		if ( $status_object && $status_object->public ) {
+			return true;
+		}
+
+		// Soliloquy_Posttype_Lite::map_meta_cap() asks an author for read_private_posts even
+		// on their own private slider, which the author role lacks.
+		$user_id = get_current_user_id();
+
+		if ( $user_id && (int) get_post_field( 'post_author', $post_id ) === $user_id ) {
+			return true;
+		}
+
+		// A status nothing has registered (left behind by a deactivated workflow plugin, say)
+		// makes core's map_meta_cap() raise _doing_it_wrong() for read_post and fall back to
+		// edit_others_posts. Ask for that directly instead.
+		if ( ! $status_object ) {
+			return current_user_can( 'edit_others_posts' );
+		}
+
+		return current_user_can( 'read_post', $post_id );
+	}
+
+	/**
 	 * Whether the slider being rendered is in the Trash.
 	 *
 	 * Takes the post ID the caller resolved the slider data from and reads that post's
-	 * status. Only 'trash' is treated as non-renderable; draft, pending and private
-	 * sliders are a separate concern and are deliberately left alone.
+	 * status. Only 'trash' is checked here; the other non-public statuses are handled
+	 * by can_view_slider(), which unlike this check lets a user who may read the post
+	 * see it.
 	 *
 	 * The ID the embed resolved to is used in preference to the one inside the slider
 	 * data, which is not reliably the slider's own post ID: a slider duplicated by a
@@ -879,8 +971,8 @@ class Soliloquy_Shortcode_Lite {
 	 * Trusting the stored ID would make this gate read the wrong post -- letting a
 	 * trashed duplicate through when the original is published, and hiding a published
 	 * slider when the original is in the Trash. The stored ID is still the only thing
-	 * available for a slug embed or a custom data source, so it remains the fallback,
-	 * guarded on being numeric because a custom source may use a non-numeric one.
+	 * available for a custom data source, so it remains the fallback, guarded on being
+	 * numeric because a custom source may use a non-numeric one.
 	 *
 	 * @since 2.8.6
 	 *

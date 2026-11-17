@@ -954,17 +954,38 @@ class Soliloquy_Ajax {
 			wp_send_json_error( [ 'message' => esc_html__( 'You are not allowed to view slider data.', 'soliloquy' ) ] );
 		}
 
-		// Prepare variables and grab the slider data.
-		$slider_id   = isset( $_POST['post_id'] ) ? absint( $_POST['post_id'] ) : false;
-		$slider_data = get_post_meta( $slider_id, '_sol_slider_data', true );
+		// Send back only slider data the current user may see.
+		$slider_id = isset( $_POST['post_id'] ) ? absint( $_POST['post_id'] ) : 0;
 
-		// Send back publicly viewable slider data.
-		if ( is_post_publicly_viewable( $slider_id ) ) {
-			echo wp_json_encode( $slider_data );
-		} else {
-			echo wp_json_encode( '' );
-		}
+		echo wp_json_encode( $this->get_viewable_slider_data( $slider_id ) );
 		die;
+	}
+
+	/**
+	 * Slider data for the editor's insert-slider modal, if the current user may see it.
+	 *
+	 * A slider that is not publicly viewable gives nothing. Neither does a password-protected
+	 * one, unless the user may edit it: is_post_publicly_viewable() passes it because its
+	 * status is 'publish', and this is the same rule the REST field applies. See #140.
+	 *
+	 * @since 2.8.8
+	 *
+	 * @param int $slider_id Slider post ID.
+	 * @return array|string The slider data, or an empty string when the user may not see it.
+	 */
+	public function get_viewable_slider_data( $slider_id ) {
+
+		$slider_id = absint( $slider_id );
+
+		if ( ! $slider_id || ! is_post_publicly_viewable( $slider_id ) ) {
+			return '';
+		}
+
+		if ( '' !== (string) get_post_field( 'post_password', $slider_id ) && ! current_user_can( 'edit_post', $slider_id ) ) {
+			return '';
+		}
+
+		return get_post_meta( $slider_id, '_sol_slider_data', true );
 	}
 
 	/**

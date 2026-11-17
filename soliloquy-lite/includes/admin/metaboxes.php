@@ -1226,8 +1226,11 @@ endforeach;
 		// Provide a filter to override settings.
 		$settings = apply_filters( 'soliloquy_save_settings', $settings, $post_id, $post );
 
-		// Update the post meta.
-		update_post_meta( $post_id, '_sol_slider_data', $settings );
+		// Update the post meta, through the writer the abilities share. Unslashed
+		// first: soliloquy_save_settings listeners (the Custom CSS addon, #401) add raw,
+		// still-slashed $_POST values, which the bare update_post_meta() this replaced
+		// unslashed once, so the stored payload stays exactly what it was.
+		Soliloquy_Slider_Service_Lite::write_slider_data( $post_id, wp_unslash( $settings ) );
 
 		// Change states of images in slider from pending to active.
 		$this->change_slider_states( $post_id );
@@ -1297,7 +1300,7 @@ endforeach;
 
 			$thumbnail = wp_get_attachment_image_src( $id, 'thumbnail' );
 
-			$json = version_compare( PHP_VERSION, '5.3.0' ) >= 0 ? wp_json_encode( $data, JSON_HEX_APOS ) : wp_json_encode( $data );
+			$json = wp_json_encode( $data, JSON_HEX_APOS );
 
 			ob_start();
 		?>
@@ -1344,7 +1347,9 @@ endforeach;
 			}
 		}
 
-		update_post_meta( $post_id, '_sol_slider_data', $slider_data );
+		if ( is_array( $slider_data ) ) {
+			Soliloquy_Slider_Service_Lite::write_slider_data( $post_id, $slider_data );
+		}
 	}
 
 	/**

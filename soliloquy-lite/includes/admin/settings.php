@@ -53,13 +53,14 @@ class Soliloquy_Settings {
 	 * @param string $tab Tab to highlight as active.
 	 */
 	public static function tab_navigation( $tab = 'soliloquy-settings' ) {
+		$current_tab = self::current_tab();
 		?>
 
 		<ul class="soliloquy-nav-tab-wrapper">
 			<li>
 			<a class="soliloquy-nav-tab
 			<?php
-			if ( isset( $_GET['page'] ) && 'soliloquy-settings' === sanitize_text_field( wp_unslash( $_GET['page'] ) ) ) : // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			if ( isset( $_GET['page'] ) && 'soliloquy-settings' === sanitize_text_field( wp_unslash( $_GET['page'] ) ) && '' === $current_tab ) : // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				?>
 				soliloquy-nav-tab-active<?php endif; ?>" href="
 				<?php
@@ -79,6 +80,11 @@ class Soliloquy_Settings {
 				<?php esc_html_e( 'Settings', 'soliloquy' ); ?>
 			</a>
 			</li>
+			<?php foreach ( self::get_extra_tabs() as $tab_id => $tab_label ) : ?>
+			<li>
+				<a class="soliloquy-nav-tab<?php echo $tab_id === $current_tab ? ' soliloquy-nav-tab-active' : ''; ?>" href="<?php echo esc_url( self::get_tab_url( $tab_id ) ); ?>"><?php echo esc_html( $tab_label ); ?></a>
+			</li>
+			<?php endforeach; ?>
 
 		</ul>
 
@@ -95,6 +101,24 @@ class Soliloquy_Settings {
 	public function page() {
 
 		self::tab_navigation( __METHOD__ );
+
+		$current_tab = self::current_tab();
+
+		if ( '' !== $current_tab ) {
+			?>
+			<div class="soliloquy-settings-tab">
+				<?php
+				/**
+				 * Renders an extra Soliloquy Lite settings tab.
+				 *
+				 * @since 2.9.0
+				 */
+				do_action( 'soliloquy_lite_settings_tab_' . $current_tab );
+				?>
+			</div>
+			<?php
+			return;
+		}
 		?>
 		<div class="soliloquy-settings-tab">
 			<table class="form-table">
@@ -151,5 +175,62 @@ class Soliloquy_Settings {
 			<!-- <hr /> -->
 		</div>
 		<?php
+	}
+
+	/**
+	 * Extra settings tabs, keyed by tab ID.
+	 *
+	 * The settings screen used to be a single page. Each extra tab renders on
+	 * the same screen through `soliloquy_lite_settings_tab_<id>`.
+	 *
+	 * @since 2.9.0
+	 *
+	 * @return array<string, string> Tab labels keyed by tab ID.
+	 */
+	public static function get_extra_tabs() {
+		/**
+		 * Filters the extra Soliloquy Lite settings tabs.
+		 *
+		 * @since 2.9.0
+		 *
+		 * @param array<string, string> $tabs Tab labels keyed by tab ID.
+		 */
+		$tabs = apply_filters( 'soliloquy_lite_settings_tab_nav', [] );
+
+		return is_array( $tabs ) ? $tabs : [];
+	}
+
+	/**
+	 * The extra tab being viewed, or '' for the main settings page.
+	 *
+	 * @since 2.9.0
+	 *
+	 * @return string
+	 */
+	public static function current_tab() {
+		$tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+		return '' !== $tab && array_key_exists( $tab, self::get_extra_tabs() ) ? $tab : '';
+	}
+
+	/**
+	 * URL of a settings tab.
+	 *
+	 * @since 2.9.0
+	 *
+	 * @param string $tab_id Tab ID, or '' for the main settings page.
+	 * @return string
+	 */
+	public static function get_tab_url( $tab_id = '' ) {
+		$args = [
+			'post_type' => 'soliloquy',
+			'page'      => 'soliloquy-settings',
+		];
+
+		if ( '' !== $tab_id ) {
+			$args['tab'] = $tab_id;
+		}
+
+		return add_query_arg( $args, admin_url( 'edit.php' ) );
 	}
 }

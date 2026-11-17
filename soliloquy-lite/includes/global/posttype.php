@@ -123,6 +123,13 @@ class Soliloquy_Posttype_Lite {
 			return $data;
 		}
 
+		// A password-protected slider is published, and core only redacts content/excerpt for
+		// it, not this field. REST requests carry no reliable postpass cookie and core's
+		// ?password= param covers content only, so gate on the password being set. See #140.
+		if ( '' !== (string) $post->post_password && ! current_user_can( 'edit_post', $post->ID ) ) {
+			return $data;
+		}
+
 		$slider_data = get_post_meta( $post->ID, '_sol_slider_data', true );
 
 		if ( $slider_data ) {

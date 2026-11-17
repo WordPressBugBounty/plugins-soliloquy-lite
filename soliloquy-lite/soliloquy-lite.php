@@ -5,7 +5,8 @@
  * Description: Soliloquy is the best responsive WordPress slider plugin. This is the lite version.
  * Author:      Soliloquy Team
  * Author URI:  https://soliloquywp.com
- * Version:     2.8.7
+ * Version:     2.9.0
+ * Requires PHP: 7.0
  * Text Domain: soliloquy
  * Domain Path: languages
  *
@@ -30,562 +31,587 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+// Stop here on PHP older than the minimum: the plugin stays active but loads nothing, and the
+// Plugins screen explains why. Nothing below this block may run before the check. Between the
+// minimum and the version the next release will require, announce() adds a dismissible admin notice.
+require_once __DIR__ . '/includes/global/requirements-check.php';
+$soliloquy_lite_requirements = new Soliloquy\Lite\RequirementsCheck( __FILE__, 'Soliloquy Lite' );
+if ( ! $soliloquy_lite_requirements->met() ) {
+	$soliloquy_lite_requirements->quit();
+	return;
+}
+$soliloquy_lite_requirements->announce();
+unset( $soliloquy_lite_requirements );
+
 // phpcs:disable Universal.Files.SeparateFunctionsFromOO.Mixed
 
-/**
- * Main plugin class.
- *
- * @since 1.0.0
- *
- * @package Soliloquy_Lite
- * @author SoliloquyWP Team <support@soliloquywp.com>
- */
-class Soliloquy_Lite {
+if ( ! class_exists( 'Soliloquy_Lite' ) ) :
 
 	/**
-	 * Holds the class object.
+	 * Main plugin class.
 	 *
 	 * @since 1.0.0
 	 *
-	 * @var object
+	 * @package Soliloquy_Lite
+	 * @author SoliloquyWP Team <support@soliloquywp.com>
 	 */
-	public static $instance;
+	class Soliloquy_Lite {
 
-	/**
-	 * Plugin version, used for cache-busting of style and script file references.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @var string
-	 */
-	public $version = '2.8.7';
+		/**
+		 * Holds the class object.
+		 *
+		 * @since 1.0.0
+		 *
+		 * @var object
+		 */
+		public static $instance;
 
-	/**
-	 * The name of the plugin.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @var string
-	 */
-	public $plugin_name = 'Soliloquy Lite';
+		/**
+		 * Plugin version, used for cache-busting of style and script file references.
+		 *
+		 * @since 1.0.0
+		 *
+		 * @var string
+		 */
+		public $version = '2.9.0';
 
-	/**
-	 * Unique plugin slug identifier.z
-	 *
-	 * @since 1.0.0
-	 *
-	 * @var string
-	 */
-	public $plugin_slug = 'soliloquy-lite';
+		/**
+		 * The name of the plugin.
+		 *
+		 * @since 1.0.0
+		 *
+		 * @var string
+		 */
+		public $plugin_name = 'Soliloquy Lite';
 
-	/**
-	 * Plugin textdomain.
-	 *
-	 * @since 2.4.0.1
-	 *
-	 * @var string
-	 */
-	public $domain = 'soliloquy';
+		/**
+		 * Unique plugin slug identifier.z
+		 *
+		 * @since 1.0.0
+		 *
+		 * @var string
+		 */
+		public $plugin_slug = 'soliloquy-lite';
 
-	/**
-	 * Plugin file.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @var string
-	 */
-	public $file = __FILE__;
+		/**
+		 * Plugin textdomain.
+		 *
+		 * @since 2.4.0.1
+		 *
+		 * @var string
+		 */
+		public $domain = 'soliloquy';
 
-	/**
-	 * Notifications class
-	 *
-	 * @var object|null
-	 */
-	public $notifications = null;
-	/**
-	 * Primary class constructor.
-	 *
-	 * @since 1.0.0
-	 */
-	public function __construct() {
+		/**
+		 * Plugin file.
+		 *
+		 * @since 1.0.0
+		 *
+		 * @var string
+		 */
+		public $file = __FILE__;
 
-		$this->setup_constants();
-		// Fire a hook before the class is setup.
-		do_action( 'soliloquy_pre_init' );
+		/**
+		 * Notifications class
+		 *
+		 * @var object|null
+		 */
+		public $notifications = null;
+		/**
+		 * Primary class constructor.
+		 *
+		 * @since 1.0.0
+		 */
+		public function __construct() {
 
-		// Load the plugin textdomain.
-		add_action( 'plugins_loaded', [ $this, 'load_plugin_textdomain' ] );
+			$this->setup_constants();
+			// Fire a hook before the class is setup.
+			do_action( 'soliloquy_pre_init' );
 
-		// Load the plugin.
-		add_action( 'init', [ $this, 'init' ], 0 );
+			// Load the plugin textdomain.
+			add_action( 'plugins_loaded', [ $this, 'load_plugin_textdomain' ] );
 
-		add_filter( 'admin_footer_text', [ $this, 'admin_footer' ], 1, 2 );
-	}
+			// Load the plugin.
+			add_action( 'init', [ $this, 'init' ], 0 );
 
-	/**
-	 * Helper method to set constants
-	 *
-	 * @return void
-	 */
-	public function setup_constants() {
-		if ( ! defined( 'SOLILOQUY_VERSION' ) ) {
-
-			define( 'SOLILOQUY_VERSION', $this->version );
-
+			add_filter( 'admin_footer_text', [ $this, 'admin_footer' ], 1, 2 );
 		}
 
-		if ( ! defined( 'SOLILOQUY_SLUG' ) ) {
+		/**
+		 * Helper method to set constants
+		 *
+		 * @return void
+		 */
+		public function setup_constants() {
+			if ( ! defined( 'SOLILOQUY_VERSION' ) ) {
 
-			define( 'SOLILOQUY_SLUG', $this->plugin_slug );
+				define( 'SOLILOQUY_VERSION', $this->version );
 
-		}
-
-		if ( ! defined( 'SOLILOQUY_FILE' ) ) {
-
-			define( 'SOLILOQUY_FILE', $this->file );
-
-		}
-
-		if ( ! defined( 'SOLILOQUY_DIR' ) ) {
-
-			define( 'SOLILOQUY_DIR', plugin_dir_path( __FILE__ ) );
-
-		}
-
-		if ( ! defined( 'SOLILOQUY_URL' ) ) {
-
-			define( 'SOLILOQUY_URL', plugin_dir_url( __FILE__ ) );
-
-		}
-	}
-	/**
-	 * Loads the plugin textdomain for translation.
-	 *
-	 * @since 1.0.0
-	 */
-	public function load_plugin_textdomain() {
-
-		load_plugin_textdomain( $this->domain, false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
-	}
-
-	/**
-	 * Loads the plugin into WordPress.
-	 *
-	 * @since 1.0.0
-	 */
-	public function init() {
-
-		// If the main Soliloquy plugin exists, do nothing.
-		if ( class_exists( 'Soliloquy' ) || class_exists( 'Tgmsp' ) ) {
-			return;
-		}
-
-		// Run hook once Soliloquy has been initialized.
-		// This hook is deliberately different from the Pro version, to prevent the entire site breaking.
-		// if a user activates Lite with Pro Addons.
-		do_action( 'soliloquy_lite_init' );
-
-		// Load admin only components.
-		if ( is_admin() ) {
-			$this->require_admin();
-		}
-
-		// Load global components.
-		$this->require_global();
-	}
-
-	/**
-	 * Loads all admin related files into scope.
-	 *
-	 * @since 1.0.0
-	 */
-	public function require_admin() {
-
-		require plugin_dir_path( __FILE__ ) . 'includes/admin/ajax.php';
-		require plugin_dir_path( __FILE__ ) . 'includes/admin/common.php';
-		require plugin_dir_path( __FILE__ ) . 'includes/admin/editor.php';
-		require plugin_dir_path( __FILE__ ) . 'includes/admin/metaboxes.php';
-		require plugin_dir_path( __FILE__ ) . 'includes/admin/posttype.php';
-		require plugin_dir_path( __FILE__ ) . 'includes/admin/settings.php';
-		require plugin_dir_path( __FILE__ ) . 'includes/admin/addons.php';
-		require plugin_dir_path( __FILE__ ) . 'includes/admin/media-view.php';
-		require plugin_dir_path( __FILE__ ) . 'includes/admin/review.php';
-		require plugin_dir_path( __FILE__ ) . 'includes/admin/blocks.php';
-		require plugin_dir_path( __FILE__ ) . 'includes/admin/welcome.php';
-
-		( new Soliloquy_Settings() )->hooks();
-	}
-
-	/**
-	 * Loads all global files into scope.
-	 *
-	 * @since 1.0.0
-	 */
-	public function require_global() {
-
-		require plugin_dir_path( __FILE__ ) . 'includes/global/common.php';
-		require plugin_dir_path( __FILE__ ) . 'includes/global/posttype.php';
-		require plugin_dir_path( __FILE__ ) . 'includes/global/shortcode.php';
-		require plugin_dir_path( __FILE__ ) . 'includes/admin/notifications.php';
-		require_once plugin_dir_path( __FILE__ ) . 'includes/global/lifecycle.php';
-
-		$this->notifications = new Soliloquy_Notifications();
-		$this->notifications->hooks();
-
-		// Slider removal is handled globally rather than from the admin bundle: that
-		// bundle is only required when is_admin(), so a REST or WP-CLI delete would
-		// never reach the handlers and would leave the slider rendering from cache.
-		( new Soliloquy_Lifecycle_Lite() )->hooks();
-	}
-
-	/**
-	 * Returns a slider based on ID.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @param int $id     The slider ID used to retrieve a slider.
-	 * @return array|bool Array of slider data or false if none found.
-	 */
-	public function get_slider( $id ) {
-
-		$slider = get_transient( '_sol_cache_' . $id );
-		// Attempt to return the transient first, otherwise generate the new query to retrieve the data.
-		if ( false === $slider ) {
-			$slider = $this->_get_slider( $id );
-			if ( $slider ) {
-				set_transient( '_sol_cache_' . $id, $slider, DAY_IN_SECONDS );
-			}
-		}
-
-		// Return the slider data.
-		return $slider;
-	}
-
-	/**
-	 * Internal method that returns a slider based on ID.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @param int $id     The slider ID used to retrieve a slider.
-	 * @return array|bool Array of slider data or false if none found.
-	 */
-	public function _get_slider( $id ) { // phpcs:ignore PSR2.Methods.MethodDeclaration.Underscore
-
-		return get_post_meta( $id, '_sol_slider_data', true );
-	}
-
-	/**
-	 * Returns a slider based on slug.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @param string $slug The slider slug used to retrieve a slider.
-	 * @return array|bool  Array of slider data or false if none found.
-	 */
-	public function get_slider_by_slug( $slug ) {
-
-		$slider = get_transient( '_sol_cache_' . $slug );
-
-		// Attempt to return the transient first, otherwise generate the new query to retrieve the data.
-		if ( false === $slider ) {
-			$slider = $this->_get_slider_by_slug( $slug );
-			if ( $slider ) {
-				set_transient( '_sol_cache_' . $slug, $slider, DAY_IN_SECONDS );
-			}
-		}
-
-		// Return the slider data.
-		return $slider;
-	}
-
-	/**
-	 * Internal method that returns a slider based on slug.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @param string $slug The slider slug used to retrieve a slider.
-	 * @return array|bool  Array of slider data or false if none found.
-	 */
-	public function _get_slider_by_slug( $slug ) { // phpcs:ignore PSR2.Methods.MethodDeclaration.Underscore
-
-		$sliders = $this->get_sliders();
-		if ( ! $sliders ) {
-			return false;
-		}
-
-		// Loop through the sliders to find a match by slug.
-		$ret = false;
-		foreach ( $sliders as $data ) {
-
-			if ( empty( $data['config']['slug'] ) ) {
-				continue;
 			}
 
-			if ( $data['config']['slug'] === $slug ) {
+			if ( ! defined( 'SOLILOQUY_SLUG' ) ) {
 
-				$ret = $data;
+				define( 'SOLILOQUY_SLUG', $this->plugin_slug );
 
-				break;
-			}
-		}
-
-		// Return the slider data.
-		return $ret;
-	}
-
-	/**
-	 * Returns all sliders created on the site.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return array|bool Array of slider data or false if none found.
-	 */
-	public function get_sliders() {
-
-		$sliders = get_transient( '_sol_cache_all' );
-		// Attempt to return the transient first, otherwise generate the new query to retrieve the data.
-		if ( false === $sliders ) {
-
-			$sliders = $this->_get_sliders();
-			if ( $sliders ) {
-				set_transient( '_sol_cache_all', $sliders, DAY_IN_SECONDS );
-			}
-		}
-
-		// Return the slider data.
-		return $sliders;
-	}
-
-	/**
-	 * Internal method that returns all sliders created on the site.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return array|bool Array of slider data or false if none found.
-	 */
-	public function _get_sliders() { // phpcs:ignore PSR2.Methods.MethodDeclaration.Underscore
-
-		$ids = $this->get_published_slider_ids();
-
-		if ( empty( $ids ) ) {
-			return false;
-		}
-
-		// Now loop through all the sliders found and only use sliders that have images in them.
-		$ret = [];
-		foreach ( $ids as $id ) {
-
-			$data = get_post_meta( $id, '_sol_slider_data', true );
-			if ( ! $this->is_listed_slider( $data ) ) {
-				continue;
 			}
 
-			$ret[] = $data;
+			if ( ! defined( 'SOLILOQUY_FILE' ) ) {
+
+				define( 'SOLILOQUY_FILE', $this->file );
+
+			}
+
+			if ( ! defined( 'SOLILOQUY_DIR' ) ) {
+
+				define( 'SOLILOQUY_DIR', plugin_dir_path( __FILE__ ) );
+
+			}
+
+			if ( ! defined( 'SOLILOQUY_URL' ) ) {
+
+				define( 'SOLILOQUY_URL', plugin_dir_url( __FILE__ ) );
+
+			}
+		}
+		/**
+		 * Loads the plugin textdomain for translation.
+		 *
+		 * @since 1.0.0
+		 */
+		public function load_plugin_textdomain() {
+
+			load_plugin_textdomain( $this->domain, false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
 		}
 
-		// Return the slider data.
-		return $ret;
-	}
+		/**
+		 * Loads the plugin into WordPress.
+		 *
+		 * @since 1.0.0
+		 */
+		public function init() {
 
-	/**
-	 * Returns the ID of the published slider post a slug resolves to.
-	 *
-	 * Picks the same slider _get_slider_by_slug() would on a cold cache -- the first
-	 * slider in _get_sliders() whose slug matches -- but returns the ID of the post it
-	 * was read from, and reads it fresh rather than from the day-long _sol_cache_all
-	 * transient. That transient keeps a slider listed after its status changes by any
-	 * route that does not flush it (Quick Edit, Bulk Edit, REST, wp_update_post()), and
-	 * the 'id' stored inside a listed slider's data is not reliably its own post ID: a
-	 * duplicated or WPML-translated slider keeps the original's until it is re-saved.
-	 *
-	 * @since 2.8.7
-	 *
-	 * @param string $slug The slider slug.
-	 * @return int         The slider's post ID, or 0 if no published slider has that slug.
-	 */
-	public function get_slider_post_id_by_slug( $slug ) {
+			// If the main Soliloquy plugin exists, do nothing.
+			if ( class_exists( 'Soliloquy' ) || class_exists( 'Tgmsp' ) ) {
+				return;
+			}
 
-		if ( ! is_string( $slug ) || '' === $slug ) {
+			// Run hook once Soliloquy has been initialized.
+			// This hook is deliberately different from the Pro version, to prevent the entire site breaking.
+			// if a user activates Lite with Pro Addons.
+			do_action( 'soliloquy_lite_init' );
+
+			// Load admin only components.
+			if ( is_admin() ) {
+				$this->require_admin();
+			}
+
+			// Load global components.
+			$this->require_global();
+		}
+
+		/**
+		 * Loads all admin related files into scope.
+		 *
+		 * @since 1.0.0
+		 */
+		public function require_admin() {
+
+			require plugin_dir_path( __FILE__ ) . 'includes/admin/ajax.php';
+			require plugin_dir_path( __FILE__ ) . 'includes/admin/common.php';
+			require plugin_dir_path( __FILE__ ) . 'includes/admin/editor.php';
+			require plugin_dir_path( __FILE__ ) . 'includes/admin/metaboxes.php';
+			require plugin_dir_path( __FILE__ ) . 'includes/admin/posttype.php';
+			require plugin_dir_path( __FILE__ ) . 'includes/admin/settings.php';
+			require plugin_dir_path( __FILE__ ) . 'includes/admin/addons.php';
+			require plugin_dir_path( __FILE__ ) . 'includes/admin/media-view.php';
+			require plugin_dir_path( __FILE__ ) . 'includes/admin/review.php';
+			require plugin_dir_path( __FILE__ ) . 'includes/admin/blocks.php';
+			require plugin_dir_path( __FILE__ ) . 'includes/admin/welcome.php';
+			require plugin_dir_path( __FILE__ ) . 'includes/admin/abilities-settings.php';
+
+			( new Soliloquy_Settings() )->hooks();
+			( new Soliloquy_Abilities_Settings_Lite() )->hooks();
+		}
+
+		/**
+		 * Loads all global files into scope.
+		 *
+		 * @since 1.0.0
+		 */
+		public function require_global() {
+
+			require plugin_dir_path( __FILE__ ) . 'includes/global/common.php';
+			require plugin_dir_path( __FILE__ ) . 'includes/global/posttype.php';
+			require plugin_dir_path( __FILE__ ) . 'includes/global/shortcode.php';
+			require plugin_dir_path( __FILE__ ) . 'includes/admin/notifications.php';
+			require_once plugin_dir_path( __FILE__ ) . 'includes/global/lifecycle.php';
+			require_once plugin_dir_path( __FILE__ ) . 'includes/global/slider-service.php';
+			require_once plugin_dir_path( __FILE__ ) . 'includes/global/abilities-base.php';
+			require_once plugin_dir_path( __FILE__ ) . 'includes/global/abilities.php';
+
+			$this->notifications = new Soliloquy_Notifications();
+			$this->notifications->hooks();
+
+			// Slider removal is handled globally rather than from the admin bundle: that
+			// bundle is only required when is_admin(), so a REST or WP-CLI delete would
+			// never reach the handlers and would leave the slider rendering from cache.
+			( new Soliloquy_Lifecycle_Lite() )->hooks();
+
+			// Abilities API (WordPress 6.9+). Registered here, after init() has stood
+			// Lite down for Pro, so the two never register the same ability names.
+			Soliloquy_Abilities_Lite::instance()->init();
+		}
+
+		/**
+		 * Returns a slider based on ID.
+		 *
+		 * @since 1.0.0
+		 *
+		 * @param int $id     The slider ID used to retrieve a slider.
+		 * @return array|bool Array of slider data or false if none found.
+		 */
+		public function get_slider( $id ) {
+
+			$slider = get_transient( '_sol_cache_' . $id );
+			// Attempt to return the transient first, otherwise generate the new query to retrieve the data.
+			if ( false === $slider ) {
+				$slider = $this->_get_slider( $id );
+				if ( $slider ) {
+					set_transient( '_sol_cache_' . $id, $slider, DAY_IN_SECONDS );
+				}
+			}
+
+			// Return the slider data.
+			return $slider;
+		}
+
+		/**
+		 * Internal method that returns a slider based on ID.
+		 *
+		 * @since 1.0.0
+		 *
+		 * @param int $id     The slider ID used to retrieve a slider.
+		 * @return array|bool Array of slider data or false if none found.
+		 */
+		public function _get_slider( $id ) { // phpcs:ignore PSR2.Methods.MethodDeclaration.Underscore
+
+			return get_post_meta( $id, '_sol_slider_data', true );
+		}
+
+		/**
+		 * Returns a slider based on slug.
+		 *
+		 * @since 1.0.0
+		 *
+		 * @param string $slug The slider slug used to retrieve a slider.
+		 * @return array|bool  Array of slider data or false if none found.
+		 */
+		public function get_slider_by_slug( $slug ) {
+
+			$slider = get_transient( '_sol_cache_' . $slug );
+
+			// Attempt to return the transient first, otherwise generate the new query to retrieve the data.
+			if ( false === $slider ) {
+				$slider = $this->_get_slider_by_slug( $slug );
+				if ( $slider ) {
+					set_transient( '_sol_cache_' . $slug, $slider, DAY_IN_SECONDS );
+				}
+			}
+
+			// Return the slider data.
+			return $slider;
+		}
+
+		/**
+		 * Internal method that returns a slider based on slug.
+		 *
+		 * @since 1.0.0
+		 *
+		 * @param string $slug The slider slug used to retrieve a slider.
+		 * @return array|bool  Array of slider data or false if none found.
+		 */
+		public function _get_slider_by_slug( $slug ) { // phpcs:ignore PSR2.Methods.MethodDeclaration.Underscore
+
+			$sliders = $this->get_sliders();
+			if ( ! $sliders ) {
+				return false;
+			}
+
+			// Loop through the sliders to find a match by slug.
+			$ret = false;
+			foreach ( $sliders as $data ) {
+
+				if ( empty( $data['config']['slug'] ) ) {
+					continue;
+				}
+
+				if ( $data['config']['slug'] === $slug ) {
+
+					$ret = $data;
+
+					break;
+				}
+			}
+
+			// Return the slider data.
+			return $ret;
+		}
+
+		/**
+		 * Returns all sliders created on the site.
+		 *
+		 * @since 1.0.0
+		 *
+		 * @return array|bool Array of slider data or false if none found.
+		 */
+		public function get_sliders() {
+
+			$sliders = get_transient( '_sol_cache_all' );
+			// Attempt to return the transient first, otherwise generate the new query to retrieve the data.
+			if ( false === $sliders ) {
+
+				$sliders = $this->_get_sliders();
+				if ( $sliders ) {
+					set_transient( '_sol_cache_all', $sliders, DAY_IN_SECONDS );
+				}
+			}
+
+			// Return the slider data.
+			return $sliders;
+		}
+
+		/**
+		 * Internal method that returns all sliders created on the site.
+		 *
+		 * @since 1.0.0
+		 *
+		 * @return array|bool Array of slider data or false if none found.
+		 */
+		public function _get_sliders() { // phpcs:ignore PSR2.Methods.MethodDeclaration.Underscore
+
+			$ids = $this->get_published_slider_ids();
+
+			if ( empty( $ids ) ) {
+				return false;
+			}
+
+			// Now loop through all the sliders found and only use sliders that have images in them.
+			$ret = [];
+			foreach ( $ids as $id ) {
+
+				$data = get_post_meta( $id, '_sol_slider_data', true );
+				if ( ! $this->is_listed_slider( $data ) ) {
+					continue;
+				}
+
+				$ret[] = $data;
+			}
+
+			// Return the slider data.
+			return $ret;
+		}
+
+		/**
+		 * Returns the ID of the published slider post a slug resolves to.
+		 *
+		 * Picks the same slider _get_slider_by_slug() would on a cold cache -- the first
+		 * slider in _get_sliders() whose slug matches -- but returns the ID of the post it
+		 * was read from, and reads it fresh rather than from the day-long _sol_cache_all
+		 * transient. That transient keeps a slider listed after its status changes by any
+		 * route that does not flush it (Quick Edit, Bulk Edit, REST, wp_update_post()), and
+		 * the 'id' stored inside a listed slider's data is not reliably its own post ID: a
+		 * duplicated or WPML-translated slider keeps the original's until it is re-saved.
+		 *
+		 * @since 2.8.7
+		 *
+		 * @param string $slug The slider slug.
+		 * @return int         The slider's post ID, or 0 if no published slider has that slug.
+		 */
+		public function get_slider_post_id_by_slug( $slug ) {
+
+			if ( ! is_string( $slug ) || '' === $slug ) {
+				return 0;
+			}
+
+			$ids = $this->get_published_slider_ids();
+
+			if ( empty( $ids ) ) {
+				return 0;
+			}
+
+			// One query for every slider's meta instead of one per slider.
+			update_meta_cache( 'post', $ids );
+
+			foreach ( $ids as $id ) {
+
+				$data = get_post_meta( $id, '_sol_slider_data', true );
+				if ( ! $this->is_listed_slider( $data ) || empty( $data['config']['slug'] ) ) {
+					continue;
+				}
+
+				if ( $data['config']['slug'] === $slug ) {
+					return (int) $id;
+				}
+			}
+
 			return 0;
 		}
 
-		$ids = $this->get_published_slider_ids();
+		/**
+		 * Returns the IDs of the published sliders, newest first, as _get_sliders() lists them.
+		 *
+		 * @since 2.8.7
+		 *
+		 * @return int[] Slider post IDs.
+		 */
+		private function get_published_slider_ids() {
 
-		if ( empty( $ids ) ) {
-			return 0;
-		}
-
-		// One query for every slider's meta instead of one per slider.
-		update_meta_cache( 'post', $ids );
-
-		foreach ( $ids as $id ) {
-
-			$data = get_post_meta( $id, '_sol_slider_data', true );
-			if ( ! $this->is_listed_slider( $data ) || empty( $data['config']['slug'] ) ) {
-				continue;
-			}
-
-			if ( $data['config']['slug'] === $slug ) {
-				return (int) $id;
-			}
-		}
-
-		return 0;
-	}
-
-	/**
-	 * Returns the IDs of the published sliders, newest first, as _get_sliders() lists them.
-	 *
-	 * @since 2.8.7
-	 *
-	 * @return int[] Slider post IDs.
-	 */
-	private function get_published_slider_ids() {
-
-		$sliders = new WP_Query(
-			[
-				'post_type'      => 'soliloquy',
-				'post_status'    => 'publish',
-				'posts_per_page' => apply_filters( 'soliloquy_get_limit', 99 ),
-				'fields'         => 'ids',
-				'meta_query'     => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
-					[
-						'key'     => '_sol_slider_data',
-						'compare' => 'EXISTS',
+			$sliders = new WP_Query(
+				[
+					'post_type'      => 'soliloquy',
+					'post_status'    => 'publish',
+					'posts_per_page' => apply_filters( 'soliloquy_get_limit', 99 ),
+					'fields'         => 'ids',
+					'meta_query'     => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+						[
+							'key'     => '_sol_slider_data',
+							'compare' => 'EXISTS',
+						],
 					],
-				],
-			]
-		);
+				]
+			);
 
-		return isset( $sliders->posts ) ? array_map( 'intval', (array) $sliders->posts ) : [];
-	}
-
-	/**
-	 * Whether _get_sliders() lists a slider: it has images, or is not a default slider, and is not dynamic.
-	 *
-	 * @since 2.8.7
-	 *
-	 * @param mixed $data The slider's _sol_slider_data meta.
-	 * @return bool
-	 */
-	private function is_listed_slider( $data ) {
-
-		$type = Soliloquy_Shortcode_Lite::get_instance()->get_config( 'type', $data );
-
-		return ! ( ( empty( $data['slider'] ) && 'default' === $type ) || 'dynamic' === $type );
-	}
-
-	/**
-	 * Getter method for retrieving the main plugin filepath.
-	 *
-	 * @since 1.2.0
-	 */
-	public static function get_file() {
-
-		// $file is an instance property; reading it as self::$file was a fatal error.
-		return self::get_instance()->file;
-	}
-	/**
-	 * Loads Admin Partial
-	 *
-	 * @since 2.5.0
-	 *
-	 * @access public
-	 * @param string $template Admin View to load.
-	 * @param array  $data     (default: array()).
-	 * @return bool
-	 */
-	public function load_admin_partial( $template, $data = [] ) {
-
-		$dir = trailingslashit( plugin_dir_path( __FILE__ ) . 'includes/admin/partials' );
-
-		if ( file_exists( $dir . $template ) ) {
-
-			require_once $dir . $template;
-
-			return true;
+			return isset( $sliders->posts ) ? array_map( 'intval', (array) $sliders->posts ) : [];
 		}
 
-		return false;
-	}
+		/**
+		 * Whether _get_sliders() lists a slider: it has images, or is not a default slider, and is not dynamic.
+		 *
+		 * @since 2.8.7
+		 *
+		 * @param mixed $data The slider's _sol_slider_data meta.
+		 * @return bool
+		 */
+		private function is_listed_slider( $data ) {
 
-	/**
-	 * Helper flag method for any Soliloquy screen.
-	 *
-	 * @since 1.2.0
-	 *
-	 * @return bool True if on a Soliloquy screen, false if not.
-	 */
-	public static function is_soliloquy_screen() {
+			$type = Soliloquy_Shortcode_Lite::get_instance()->get_config( 'type', $data );
 
-		$current_screen = get_current_screen();
+			return ! ( ( empty( $data['slider'] ) && 'default' === $type ) || 'dynamic' === $type );
+		}
 
-		if ( ! $current_screen ) {
+		/**
+		 * Getter method for retrieving the main plugin filepath.
+		 *
+		 * @since 1.2.0
+		 */
+		public static function get_file() {
+
+			// $file is an instance property; reading it as self::$file was a fatal error.
+			return self::get_instance()->file;
+		}
+		/**
+		 * Loads Admin Partial
+		 *
+		 * @since 2.5.0
+		 *
+		 * @access public
+		 * @param string $template Admin View to load.
+		 * @param array  $data     (default: array()).
+		 * @return bool
+		 */
+		public function load_admin_partial( $template, $data = [] ) {
+
+			$dir = trailingslashit( plugin_dir_path( __FILE__ ) . 'includes/admin/partials' );
+
+			if ( file_exists( $dir . $template ) ) {
+
+				require_once $dir . $template;
+
+				return true;
+			}
+
 			return false;
 		}
 
-		if ( 'soliloquy' === $current_screen->post_type ) {
-			return true;
+		/**
+		 * Helper flag method for any Soliloquy screen.
+		 *
+		 * @since 1.2.0
+		 *
+		 * @return bool True if on a Soliloquy screen, false if not.
+		 */
+		public static function is_soliloquy_screen() {
+
+			$current_screen = get_current_screen();
+
+			if ( ! $current_screen ) {
+				return false;
+			}
+
+			if ( 'soliloquy' === $current_screen->post_type ) {
+				return true;
+			}
+
+			return false;
 		}
-
-		return false;
-	}
-	/**
-	 * When user is on a Soliloquy related admin page, display footer text
-	 * that graciously asks them to rate us.
-	 *
-	 * @since 2.5.0.5
-	 * @param string $text Footer text to filter.
-	 * @return string
-	 */
-	public function admin_footer( $text ) {
-		global $current_screen;
-		if ( ! empty( $current_screen->id ) && strpos( $current_screen->id, 'soliloquy' ) !== false ) {
-			$url = 'https://wordpress.org/support/view/plugin-reviews/soliloquy-lite?filter=5';
-			/* translators: %s: urls */
-			$text = sprintf( __( 'Please rate <strong>SoliloquyWP</strong> <a href="%1$s" target="_blank">&#9733;&#9733;&#9733;&#9733;&#9733;</a> on <a href="%2$s" target="_blank">WordPress.org</a> to help us spread the word. Thank you from the Soliloquy team!', 'wpforms' ), $url, $url );
+		/**
+		 * When user is on a Soliloquy related admin page, display footer text
+		 * that graciously asks them to rate us.
+		 *
+		 * @since 2.5.0.5
+		 * @param string $text Footer text to filter.
+		 * @return string
+		 */
+		public function admin_footer( $text ) {
+			global $current_screen;
+			if ( ! empty( $current_screen->id ) && strpos( $current_screen->id, 'soliloquy' ) !== false ) {
+				$url = 'https://wordpress.org/support/view/plugin-reviews/soliloquy-lite?filter=5';
+				/* translators: %s: urls */
+				$text = sprintf( __( 'Please rate <strong>SoliloquyWP</strong> <a href="%1$s" target="_blank">&#9733;&#9733;&#9733;&#9733;&#9733;</a> on <a href="%2$s" target="_blank">WordPress.org</a> to help us spread the word. Thank you from the Soliloquy team!', 'wpforms' ), $url, $url );
+			}
+			return $text;
 		}
-		return $text;
-	}
-	/**
-	 * Helper flag method for the Add/Edit Soliloquy screens.
-	 *
-	 * @since 1.2.0
-	 *
-	 * @return bool True if on a Soliloquy Add/Edit screen, false if not.
-	 */
-	public static function is_soliloquy_add_edit_screen() {
+		/**
+		 * Helper flag method for the Add/Edit Soliloquy screens.
+		 *
+		 * @since 1.2.0
+		 *
+		 * @return bool True if on a Soliloquy Add/Edit screen, false if not.
+		 */
+		public static function is_soliloquy_add_edit_screen() {
 
-		$current_screen = get_current_screen();
+			$current_screen = get_current_screen();
 
-		if ( ! $current_screen ) {
+			if ( ! $current_screen ) {
+				return false;
+			}
+
+			if ( 'soliloquy' === $current_screen->post_type && 'post' === $current_screen->base ) {
+				return true;
+			}
+
 			return false;
 		}
 
-		if ( 'soliloquy' === $current_screen->post_type && 'post' === $current_screen->base ) {
-			return true;
-		}
 
-		return false;
+		/**
+		 * Returns the singleton instance of the class.
+		 *
+		 * @since 1.0.0
+		 *
+		 * @return object The Soliloquy_Lite object.
+		 */
+		public static function get_instance() {
+
+			if ( ! isset( self::$instance ) && ! ( self::$instance instanceof Soliloquy_Lite ) ) {
+				self::$instance = new self();
+			}
+
+			return self::$instance;
+		}
 	}
 
-
-	/**
-	 * Returns the singleton instance of the class.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return object The Soliloquy_Lite object.
-	 */
-	public static function get_instance() {
-
-		if ( ! isset( self::$instance ) && ! ( self::$instance instanceof Soliloquy_Lite ) ) {
-			self::$instance = new self();
-		}
-
-		return self::$instance;
-	}
-}
+endif;
 
 register_activation_hook( __FILE__, 'soliloquy_lite_activation_hook' );
 

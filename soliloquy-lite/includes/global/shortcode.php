@@ -932,6 +932,13 @@ class Soliloquy_Shortcode_Lite {
 			return false;
 		}
 
+		// A password-protected slider is published, so the status check below would let it
+		// through. Render it only to a visitor who entered its password (the wp-postpass_*
+		// cookie post_password_required() reads) or a user who may edit it. See #140.
+		if ( post_password_required( $post_id ) && ! current_user_can( 'edit_post', $post_id ) ) {
+			return false;
+		}
+
 		$status_object = get_post_status_object( $status );
 
 		if ( $status_object && $status_object->public ) {

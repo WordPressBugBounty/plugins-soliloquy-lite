@@ -311,36 +311,36 @@ only screen and (min-device-pixel-ratio: 2),
 only screen and (min-resolution: 192dpi),
 only screen and (min-resolution: 2dppx) {
     .soliloquy-container {
-        background-image: url("images/preloader@2x.gif");
+        background-image: url("images/preloader-2x.gif");
         background-size: 16px 16px
     }
     .soliloquy-container .soliloquy-prev {
-        background-image: url("images/left@2x.png");
+        background-image: url("images/left-2x.png");
         background-size: 10px 14px
     }
     .soliloquy-container .soliloquy-next {
-        background-image: url("images/right@2x.png");
+        background-image: url("images/right-2x.png");
         background-size: 10px 14px
     }
     .soliloquy-container .soliloquy-pager-link {
-        background-image: url("images/circle@2x.png");
+        background-image: url("images/circle-2x.png");
         background-size: 14px 14px
     }
     .soliloquy-container .soliloquy-pager-link:hover,
     .soliloquy-container .soliloquy-pager-link.active {
-        background-image: url("images/circle-hover@2x.png");
+        background-image: url("images/circle-hover-2x.png");
         background-size: 14px 14px
     }
     .soliloquy-container .soliloquy-stop {
-        background-image: url("images/pause@2x.png");
+        background-image: url("images/pause-2x.png");
         background-size: 9px 14px
     }
     .soliloquy-container .soliloquy-start {
-        background-image: url("images/play@2x.png");
+        background-image: url("images/play-2x.png");
         background-size: 14px 14px
     }
     .soliloquy-container .soliloquy-video-icon {
-        background-image: url("images/video@2x.png");
+        background-image: url("images/video-2x.png");
         background-size: 50px 50px
     }
 }

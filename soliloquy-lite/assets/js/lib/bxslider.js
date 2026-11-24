@@ -27,6 +27,8 @@
 		video: false,
 		useCSS: true,
 		preloadImages: 'visible',
+		// Longest wait (ms) for the preloaded images before the slider starts anyway. 0 waits forever.
+		preloadTimeout: 10000,
 		responsive: true,
 		slideZIndex: 50,
 		wrapperClass: 'soliloquy-wrapper',
@@ -278,16 +280,38 @@
 
 	    var loadElements = function(selector, callback) {
 	      var total = selector.find('img:not([src=""]), iframe').length,
-	      count = 0;
-	      if (total === 0) {
+	      count = 0,
+	      done = false,
+	      timer = null,
+	      finish = function() {
+	        if (done) { return; }
+	        done = true;
+	        clearTimeout(timer);
 	        callback();
+	      };
+	      // a reload while an earlier load is still waiting replaces it
+	      clearTimeout(slider.preloadTimer);
+	      slider.preloadTimer = null;
+	      if (total === 0) {
+	        finish();
 	        return;
+	      }
+	      // An image request that stalls (no load, no error) would keep the loader up forever.
+	      // Start the slider after preloadTimeout; late images show up when they arrive.
+	      var timeout = parseInt(slider.settings.preloadTimeout, 10);
+	      if (timeout > 0) {
+	        timer = slider.preloadTimer = setTimeout(finish, timeout);
 	      }
 	      selector.find('img:not([src=""]), iframe').each(function() {
 	        $(this).one('load error', function() {
-	          if (++count === total) { callback(); }
+	          // an image that arrives after the timeout started the slider: size the viewport to it
+	          if (done) {
+	            if (slider.initialized) { el.redrawSlider(); }
+	            return;
+	          }
+	          if (++count >= total) { finish(); }
 	        }).each(function() {
-	          if (this.complete) { $(this).load(); }
+	          if (this.complete) { $(this).trigger('load'); }
 	        });
 	      });
 	    };

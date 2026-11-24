@@ -7,6 +7,7 @@
  * - slider-types.js
  * - media-delete.js
  * - media-edit.js
+ * - media-edit-bulk.js
  * - media-insert.js
  * - media-manage.js
  * - media-upload.js

@@ -92,7 +92,7 @@ class Soliloquy_Posttype_Lite {
 				'capability_type'     => 'post',
 				'map_meta_cap'        => true,
 				'menu_position'       => apply_filters( 'soliloquy_post_type_menu_position', 248 ),
-				'menu_icon'           => plugins_url( 'assets/css/images/menu-icon@2x.png', $this->base->file ),
+				'menu_icon'           => plugins_url( 'assets/css/images/menu-icon-2x.png', $this->base->file ),
 				'supports'            => [ 'title', 'author' ],
 			]
 		);

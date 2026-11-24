@@ -417,7 +417,12 @@ class Soliloquy_Shortcode_Lite {
 
 				jQuery('#soliloquy-container-<?php echo sanitize_html_class( $data['id'] ); ?>').css('height', Math.round(jQuery('#soliloquy-container-<?php echo sanitize_html_class( $data['id'] ); ?>').width()/(<?php echo esc_js( $this->get_config( 'slider_width', $data ) ); ?>/<?php echo esc_js( $this->get_config( 'slider_height', $data ) ); ?>)));
 
-				jQuery(window).load(function(){
+				<?php
+				// Start on DOM ready, not window load: window load waits for every request on the page,
+				// so one stalled image request would keep the slider from starting at all. bxSlider
+				// itself waits for the start slide's images, bounded by preloadTimeout below.
+				?>
+				jQuery(document).ready(function(){
 					var $ = jQuery;
 					<?php do_action( 'soliloquy_api_start', $data ); ?>
 
@@ -442,6 +447,18 @@ class Soliloquy_Shortcode_Lite {
 						prevText: '<?php echo esc_js( apply_filters( 'soliloquy_prev_text', '', $data ) ); ?>',
 						startText: '<?php echo esc_js( apply_filters( 'soliloquy_start_text', '', $data ) ); ?>',
 						stopText: '<?php echo esc_js( apply_filters( 'soliloquy_stop_text', '', $data ) ); ?>',
+						<?php
+						/**
+						 * Longest wait, in milliseconds, for the start slide's images before the slider starts
+						 * anyway (a stalled image request would otherwise keep the loader up forever). 0 or less waits forever.
+						 *
+						 * @since 2.9.1
+						 *
+						 * @param int   $timeout Milliseconds. Default 10000.
+						 * @param array $data    Slider data.
+						 */
+						?>
+						preloadTimeout: <?php echo absint( max( 0, intval( apply_filters( 'soliloquy_preload_timeout', 10000, $data ) ) ) ); ?>,
 						<?php do_action( 'soliloquy_api_config_callback', $data ); ?>
 						onSliderLoad: function(currentIndex){
 							soliloquy_container_<?php echo sanitize_html_class( $data['id'] ); ?>.find('.soliloquy-active-slide').removeClass('soliloquy-active-slide').attr('aria-hidden','true');
